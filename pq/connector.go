@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 // Connector represents a fixed configuration for the pq driver with a given

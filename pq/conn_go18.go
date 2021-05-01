@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 // Implement the "QueryerContext" interface

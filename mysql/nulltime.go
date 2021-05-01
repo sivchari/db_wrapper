@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 // Scan implements the Scanner interface.

@@ -15,11 +15,13 @@
 // https://golang.org/s/sqlwiki.
 package sql
 
+import "C"
 import (
 	"context"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"reflect"
 	"runtime"
 	"sort"
@@ -27,9 +29,12 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
+
+func main() {}
 
 var (
 	driversMu sync.RWMutex
@@ -712,7 +717,19 @@ func (t dsnConnector) Driver() driver.Driver {
 	return t.driver
 }
 
-// OpenDB opens a database using a Connector, allowing drivers to
+// DBInstances ptr instances
+var DBInstances map[uintptr]*DB
+
+// GetDBInstance is getter method getting DB struct by uintptr
+func GetDBInstance(uptr uintptr) *DB {
+	db := (*DB)(unsafe.Pointer(uptr))
+	if db == nil {
+		log.Fatalf("DB instance is nil: %v", db)
+	}
+	return db
+}
+
+// openDB opens a database using a Connector, allowing drivers to
 // bypass a string based data source name.
 //
 // Most users will open a database via a driver-specific connection
@@ -720,7 +737,7 @@ func (t dsnConnector) Driver() driver.Driver {
 // in the Go standard library. See https://golang.org/s/sqldrivers for
 // a list of third-party drivers.
 //
-// OpenDB may just validate its arguments without creating a connection
+// openDB may just validate its arguments without creating a connection
 // to the database. To verify that the data source name is valid, call
 // Ping.
 //
@@ -728,7 +745,7 @@ func (t dsnConnector) Driver() driver.Driver {
 // and maintains its own pool of idle connections. Thus, the OpenDB
 // function should be called just once. It is rarely necessary to
 // close a DB.
-func OpenDB(c driver.Connector) *DB {
+func openDB(c driver.Connector) uintptr {
 	ctx, cancel := context.WithCancel(context.Background())
 	db := &DB{
 		connector:    c,
@@ -739,8 +756,12 @@ func OpenDB(c driver.Connector) *DB {
 	}
 
 	go db.connectionOpener(ctx)
-
-	return db
+	uptr := uintptr(unsafe.Pointer(db))
+	if DBInstances == nil {
+		DBInstances = make(map[uintptr]*DB)
+	}
+	DBInstances[uptr] = db
+	return uptr
 }
 
 // Open opens a database specified by its database driver name and a
@@ -760,23 +781,25 @@ func OpenDB(c driver.Connector) *DB {
 // and maintains its own pool of idle connections. Thus, the Open
 // function should be called just once. It is rarely necessary to
 // close a DB.
-func Open(driverName, dataSourceName string) (*DB, error) {
+
+func Open(driverName, dataSourceName string) uintptr {
+	fmt.Println(driverName, dataSourceName)
 	driversMu.RLock()
 	driveri, ok := drivers[driverName]
 	driversMu.RUnlock()
 	if !ok {
-		return nil, fmt.Errorf("sql: unknown driver %q (forgotten import?)", driverName)
+		log.Fatalf("sql: unknown driver %q (forgotten import?)", driverName)
 	}
 
 	if driverCtx, ok := driveri.(driver.DriverContext); ok {
 		connector, err := driverCtx.OpenConnector(dataSourceName)
 		if err != nil {
-			return nil, err
+			log.Fatalf("sql: failed to connect: %v", err)
 		}
-		return OpenDB(connector), nil
+		return openDB(connector)
 	}
 
-	return OpenDB(dsnConnector{dsn: dataSourceName, driver: driveri}), nil
+	return openDB(dsnConnector{dsn: dataSourceName, driver: driveri})
 }
 
 func (db *DB) pingDC(ctx context.Context, dc *driverConn, release func(error)) error {
@@ -817,7 +840,9 @@ func (db *DB) PingContext(ctx context.Context) error {
 //
 // Ping uses context.Background internally; to specify the context, use
 // PingContext.
-func (db *DB) Ping() error {
+
+func Ping(uptr uintptr) error {
+	db := GetDBInstance(uptr)
 	return db.PingContext(context.Background())
 }
 
