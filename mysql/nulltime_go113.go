@@ -11,7 +11,7 @@
 package mysql
 
 import (
-	"database/sql"
+	"github.com/sivchari/database/sql"
 )
 
 // NullTime represents a time.Time that may be NULL.

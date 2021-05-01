@@ -2,11 +2,12 @@ package pq
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 // Connector represents a fixed configuration for the pq driver with a given

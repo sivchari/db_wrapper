@@ -9,10 +9,11 @@
 package mysql
 
 import (
-	"database/sql/driver"
 	"io"
 	"math"
 	"reflect"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 type resultSet struct {

@@ -5,12 +5,13 @@ package pq
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 // Notification represents a single notification from the database.

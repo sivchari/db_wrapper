@@ -10,11 +10,12 @@ package mysql
 
 import (
 	"bytes"
-	"database/sql"
-	"database/sql/driver"
 	"encoding/binary"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestLengthEncodedInteger(t *testing.T) {

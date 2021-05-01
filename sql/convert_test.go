@@ -5,7 +5,6 @@
 package sql
 
 import (
-	"database/sql/driver"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -13,6 +12,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 var someTime = time.Unix(123, 0)

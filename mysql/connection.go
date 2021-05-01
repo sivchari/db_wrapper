@@ -10,14 +10,15 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"encoding/json"
 	"io"
 	"net"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 type mysqlConn struct {

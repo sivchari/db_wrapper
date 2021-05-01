@@ -2,7 +2,6 @@ package pq
 
 import (
 	"bytes"
-	"database/sql/driver"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
@@ -14,7 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lib/pq/oid"
+	"github.com/sivchari/database/sql/driver"
+
+	"github.com/sivchari/database/pq/oid"
 )
 
 var time2400Regex = regexp.MustCompile(`^(24:00(?::00(?:\.0+)?)?)(?:[Z+-].*)?$`)

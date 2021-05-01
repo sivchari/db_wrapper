@@ -2,8 +2,6 @@ package pq
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"io"
 	"net"
@@ -13,6 +11,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 type Fatalistic interface {

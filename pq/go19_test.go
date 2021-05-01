@@ -4,10 +4,11 @@ package pq
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"reflect"
 	"testing"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestPing(t *testing.T) {

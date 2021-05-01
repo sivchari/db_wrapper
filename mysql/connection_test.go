@@ -10,11 +10,12 @@ package mysql
 
 import (
 	"context"
-	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"net"
 	"testing"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestInterpolateParams(t *testing.T) {

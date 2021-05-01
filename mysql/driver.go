@@ -18,10 +18,11 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"net"
 	"sync"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 // MySQLDriver is exported to make the driver directly accessible.

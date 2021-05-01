@@ -1,9 +1,10 @@
 package hstore
 
 import (
-	"database/sql"
-	"database/sql/driver"
 	"strings"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 // Hstore is a wrapper for transferring Hstore values back and forth easily.

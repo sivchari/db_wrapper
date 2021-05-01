@@ -6,11 +6,12 @@ package sql_test
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/sivchari/database/sql"
 )
 
 var (

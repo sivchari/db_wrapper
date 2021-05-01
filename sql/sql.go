@@ -17,7 +17,6 @@ package sql
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"io"
@@ -28,6 +27,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 var (
@@ -2885,16 +2886,16 @@ func (rs *Rows) awaitDone(ctx, txctx context.Context) {
 // the two cases.
 //
 // Every call to Scan, even the first one, must be preceded by a call to Next.
-func (rs *Rows) Next() bool {
-	var doClose, ok bool
-	withLock(rs.closemu.RLocker(), func() {
-		doClose, ok = rs.nextLocked()
-	})
-	if doClose {
-		rs.Close()
-	}
-	return ok
-}
+// func (rs *Rows) Next() bool {
+// 	var doClose, ok bool
+// 	withLock(rs.closemu.RLocker(), func() {
+// 		doClose, ok = rs.nextLocked()
+// 	})
+// 	if doClose {
+// 		rs.Close()
+// 	}
+// 	return ok
+// }
 
 func (rs *Rows) nextLocked() (doClose, ok bool) {
 	if rs.closed {

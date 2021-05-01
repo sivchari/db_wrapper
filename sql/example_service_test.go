@@ -6,13 +6,14 @@ package sql_test
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/sivchari/database/sql"
 )
 
 func Example_openDBService() {

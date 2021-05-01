@@ -6,7 +6,6 @@ package sql
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +16,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 // fakeDriver is a fake database that implements Go's driver.Driver

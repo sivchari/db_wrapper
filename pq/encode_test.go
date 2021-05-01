@@ -2,13 +2,14 @@ package pq
 
 import (
 	"bytes"
-	"database/sql"
 	"fmt"
 	"regexp"
 	"testing"
 	"time"
 
-	"github.com/lib/pq/oid"
+	"github.com/sivchari/database/sql"
+
+	"github.com/sivchari/database/pq/oid"
 )
 
 func TestScanTimestamp(t *testing.T) {

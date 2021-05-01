@@ -2,13 +2,14 @@ package pq
 
 import (
 	"bytes"
-	"database/sql"
-	"database/sql/driver"
 	"encoding/hex"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 var typeByteSlice = reflect.TypeOf([]byte{})

@@ -11,8 +11,6 @@ package mysql
 import (
 	"bytes"
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"math"
 	"runtime"
@@ -21,6 +19,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 type TB testing.B

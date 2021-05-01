@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/lib/pq/oid"
+	"github.com/sivchari/database/pq/oid"
 )
 
 const headerSize = 4
@@ -91,3 +91,11 @@ func (rs *rows) ColumnTypeLength(index int) (length int64, ok bool) {
 func (rs *rows) ColumnTypePrecisionScale(index int) (precision, scale int64, ok bool) {
 	return rs.colTyps[index].PrecisionScale()
 }
+
+// func (rs *rows) ColumnsType() []string {
+// 	result := make([]string, len(rs.colTyps))
+// 	for i := range rs.colTyps {
+// 		result[i] = rs.colTyps[i].Name()
+// 	}
+// 	return result
+// }

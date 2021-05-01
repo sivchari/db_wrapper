@@ -11,7 +11,6 @@ package mysql
 import (
 	"bytes"
 	"crypto/tls"
-	"database/sql/driver"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -19,6 +18,8 @@ import (
 	"io"
 	"math"
 	"time"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 // Packets documentation:

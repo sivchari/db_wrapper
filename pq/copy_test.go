@@ -2,13 +2,14 @@ package pq
 
 import (
 	"bytes"
-	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"net"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestCopyInStmt(t *testing.T) {

@@ -2,12 +2,13 @@ package pq
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"runtime"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestMultipleSimpleQuery(t *testing.T) {

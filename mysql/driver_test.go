@@ -12,8 +12,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
-	"database/sql"
-	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,6 +28,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 // Ensure that all the driver interfaces are implemented
