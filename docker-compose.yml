@@ -21,10 +21,12 @@ services:
   mysql:
     image: mariadb
     tty: true
-    command: --default-authentication-plugin=mysql_native_password
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: allographer
+      MYSQL_DATABASE: database
       MYSQL_USER: user
       MYSQL_PASSWORD: Password!
       TZ: Asia/Tokyo
