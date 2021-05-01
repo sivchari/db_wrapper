@@ -329,7 +329,7 @@ func convertAssignRows(dest, src interface{}, rows *Rows) error {
 			*d = Rows{
 				dc:          rows.dc,
 				releaseConn: func(error) {},
-				rowsi:       s,
+				Rowsi:       s,
 			}
 			// Chain the cancel function.
 			parentCancel := rows.cancel
