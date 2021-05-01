@@ -2571,7 +2571,7 @@ func TestRowsImplicitClose(t *testing.T) {
 	}
 
 	want, fail := 2, errors.New("fail")
-	r := rows.rowsi.(*rowsCursor)
+	r := rows.Rowsi.(*rowsCursor)
 	r.errPos, r.err = want, fail
 
 	got := 0

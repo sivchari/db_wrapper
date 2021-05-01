@@ -1678,7 +1678,7 @@ func (db *DB) queryDC(ctx, txctx context.Context, dc *driverConn, releaseConn fu
 			rows := &Rows{
 				dc:          dc,
 				releaseConn: releaseConn,
-				rowsi:       rowsi,
+				Rowsi:       rowsi,
 			}
 			rows.initContextClose(ctx, txctx)
 			return rows, nil
@@ -1708,7 +1708,7 @@ func (db *DB) queryDC(ctx, txctx context.Context, dc *driverConn, releaseConn fu
 	rows := &Rows{
 		dc:          dc,
 		releaseConn: releaseConn,
-		rowsi:       rowsi,
+		Rowsi:       rowsi,
 		closeStmt:   ds,
 	}
 	rows.initContextClose(ctx, txctx)
@@ -2693,7 +2693,7 @@ func (s *Stmt) QueryContext(ctx context.Context, args ...interface{}) (*Rows, er
 			// with releaseConn.
 			rows := &Rows{
 				dc:    dc,
-				rowsi: rowsi,
+				Rowsi: rowsi,
 				// releaseConn set below
 			}
 			// addDep must be added before initContextClose or it could attempt
@@ -2822,7 +2822,7 @@ func (s *Stmt) finalClose() error {
 type Rows struct {
 	dc          *driverConn // owned; must call releaseConn when closed to release
 	releaseConn func(error)
-	rowsi       driver.Rows
+	Rowsi       driver.Rows
 	cancel      func()      // called when Rows is closed, may be nil.
 	closeStmt   *driverStmt // if non-nil, statement to Close on close
 
@@ -2886,16 +2886,16 @@ func (rs *Rows) awaitDone(ctx, txctx context.Context) {
 // the two cases.
 //
 // Every call to Scan, even the first one, must be preceded by a call to Next.
-// func (rs *Rows) Next() bool {
-// 	var doClose, ok bool
-// 	withLock(rs.closemu.RLocker(), func() {
-// 		doClose, ok = rs.nextLocked()
-// 	})
-// 	if doClose {
-// 		rs.Close()
-// 	}
-// 	return ok
-// }
+func (rs *Rows) Next() bool {
+	var doClose, ok bool
+	withLock(rs.closemu.RLocker(), func() {
+		doClose, ok = rs.nextLocked()
+	})
+	if doClose {
+		rs.Close()
+	}
+	return ok
+}
 
 func (rs *Rows) nextLocked() (doClose, ok bool) {
 	if rs.closed {
@@ -2908,16 +2908,16 @@ func (rs *Rows) nextLocked() (doClose, ok bool) {
 	defer rs.dc.Unlock()
 
 	if rs.lastcols == nil {
-		rs.lastcols = make([]driver.Value, len(rs.rowsi.Columns()))
+		rs.lastcols = make([]driver.Value, len(rs.Rowsi.Columns()))
 	}
 
-	rs.lasterr = rs.rowsi.Next(rs.lastcols)
+	rs.lasterr = rs.Rowsi.Next(rs.lastcols)
 	if rs.lasterr != nil {
 		// Close the connection if there is a driver error.
 		if rs.lasterr != io.EOF {
 			return true, false
 		}
-		nextResultSet, ok := rs.rowsi.(driver.RowsNextResultSet)
+		nextResultSet, ok := rs.Rowsi.(driver.RowsNextResultSet)
 		if !ok {
 			return true, false
 		}
@@ -2955,7 +2955,7 @@ func (rs *Rows) NextResultSet() bool {
 	}
 
 	rs.lastcols = nil
-	nextResultSet, ok := rs.rowsi.(driver.RowsNextResultSet)
+	nextResultSet, ok := rs.Rowsi.(driver.RowsNextResultSet)
 	if !ok {
 		doClose = true
 		return false
@@ -2993,13 +2993,13 @@ func (rs *Rows) Columns() ([]string, error) {
 	if rs.closed {
 		return nil, rs.lasterrOrErrLocked(errRowsClosed)
 	}
-	if rs.rowsi == nil {
+	if rs.Rowsi == nil {
 		return nil, rs.lasterrOrErrLocked(errNoRows)
 	}
 	rs.dc.Lock()
 	defer rs.dc.Unlock()
 
-	return rs.rowsi.Columns(), nil
+	return rs.Rowsi.Columns(), nil
 }
 
 // ColumnTypes returns column information such as column type, length,
@@ -3010,13 +3010,13 @@ func (rs *Rows) ColumnTypes() ([]*ColumnType, error) {
 	if rs.closed {
 		return nil, rs.lasterrOrErrLocked(errRowsClosed)
 	}
-	if rs.rowsi == nil {
+	if rs.Rowsi == nil {
 		return nil, rs.lasterrOrErrLocked(errNoRows)
 	}
 	rs.dc.Lock()
 	defer rs.dc.Unlock()
 
-	return rowsColumnInfoSetupConnLocked(rs.rowsi), nil
+	return rowsColumnInfoSetupConnLocked(rs.Rowsi), nil
 }
 
 // ColumnType contains the name and type of a column.
@@ -3192,7 +3192,7 @@ func (rs *Rows) Scan(dest ...interface{}) error {
 	for i, sv := range rs.lastcols {
 		err := convertAssignRows(dest[i], sv, rs)
 		if err != nil {
-			return fmt.Errorf(`sql: Scan error on column index %d, name %q: %w`, i, rs.rowsi.Columns()[i], err)
+			return fmt.Errorf(`sql: Scan error on column index %d, name %q: %w`, i, rs.Rowsi.Columns()[i], err)
 		}
 	}
 	return nil
@@ -3224,7 +3224,7 @@ func (rs *Rows) close(err error) error {
 	}
 
 	withLock(rs.dc, func() {
-		err = rs.rowsi.Close()
+		err = rs.Rowsi.Close()
 	})
 	if fn := rowsCloseHook(); fn != nil {
 		fn(rs, &err)
