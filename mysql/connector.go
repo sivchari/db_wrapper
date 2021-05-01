@@ -12,7 +12,7 @@ import (
 	"context"
 	"net"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 type connector struct {

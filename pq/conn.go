@@ -20,8 +20,8 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/sivchari/database/driver"
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
 
 	"github.com/sivchari/database/pq/oid"
 	"github.com/sivchari/database/pq/scram"

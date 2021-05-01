@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 // Notification represents a single notification from the database.

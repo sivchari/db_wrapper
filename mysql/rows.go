@@ -13,7 +13,7 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 type resultSet struct {

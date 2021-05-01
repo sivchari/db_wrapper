@@ -19,7 +19,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 // Packets documentation:

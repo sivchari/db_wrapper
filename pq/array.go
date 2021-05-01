@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 var typeByteSlice = reflect.TypeOf([]byte{})

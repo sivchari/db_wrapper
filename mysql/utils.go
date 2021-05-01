@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 // Registry for custom tls.Configs
