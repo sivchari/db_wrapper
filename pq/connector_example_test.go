@@ -3,10 +3,11 @@
 package pq_test
 
 import (
-	"database/sql"
 	"fmt"
 
-	"github.com/lib/pq"
+	"github.com/sivchari/database/sql"
+
+	"github.com/sivchari/database/pq"
 )
 
 func ExampleNewConnector() {

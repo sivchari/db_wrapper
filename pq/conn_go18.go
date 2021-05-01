@@ -2,13 +2,14 @@ package pq
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"sync/atomic"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 // Implement the "QueryerContext" interface

@@ -1,9 +1,10 @@
 package hstore
 
 import (
-	"database/sql"
 	"os"
 	"testing"
+
+	"github.com/sivchari/database/sql"
 
 	_ "github.com/lib/pq"
 )

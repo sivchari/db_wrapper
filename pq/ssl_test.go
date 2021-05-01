@@ -5,10 +5,11 @@ package pq
 import (
 	_ "crypto/sha256"
 	"crypto/x509"
-	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/sivchari/database/sql"
 )
 
 func maybeSkipSSLTests(t *testing.T) {

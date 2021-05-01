@@ -9,10 +9,11 @@
 package mysql
 
 import (
-	"database/sql"
-	"database/sql/driver"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 var (

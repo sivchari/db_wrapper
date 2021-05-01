@@ -6,8 +6,9 @@ package sql
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 func ctxDriverPrepare(ctx context.Context, ci driver.Conn, query string) (driver.Stmt, error) {

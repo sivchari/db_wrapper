@@ -3,11 +3,12 @@
 package pq_test
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
-	"github.com/lib/pq"
+	"github.com/sivchari/database/sql"
+
+	"github.com/sivchari/database/pq"
 )
 
 func ExampleConnectorWithNoticeHandler() {

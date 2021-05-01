@@ -4,7 +4,8 @@ package pq
 
 import (
 	"context"
-	"database/sql/driver"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 // NoticeHandler returns the notice handler on the given connection, if any. A

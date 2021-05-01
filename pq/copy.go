@@ -1,11 +1,12 @@
 package pq
 
 import (
-	"database/sql/driver"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"sync"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 var (

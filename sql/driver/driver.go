@@ -424,6 +424,8 @@ type Rows interface {
 	// string should be returned for that entry.
 	Columns() []string
 
+	ColumnsType() []string
+
 	// Close closes the rows iterator.
 	Close() error
 

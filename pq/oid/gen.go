@@ -5,14 +5,14 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/sivchari/database/sql"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 
-	_ "github.com/lib/pq"
+	_ "github.com/sivchari/database/pq"
 )
 
 // OID represent a postgres Object Identifier Type.

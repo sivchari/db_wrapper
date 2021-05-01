@@ -4,9 +4,10 @@ package pq
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"testing"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestNewConnector_WorksWithOpenDB(t *testing.T) {

@@ -1,0 +1,38 @@
+version: '3'
+services:
+  go:
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile
+    tty: true
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - ./src/go:/go/src
+  nim:
+    build:
+      context: .
+      dockerfile: ./docker/nim/Dockerfile
+    tty: true
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - ./src/database:/root/project
+  mysql:
+    image: mariadb
+    tty: true
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: allographer
+      MYSQL_USER: user
+      MYSQL_PASSWORD: Password!
+      TZ: Asia/Tokyo
+  postgres:
+    image: postgres:alpine
+    tty: true
+    environment:
+      POSTGRES_DB: allographer
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: Password!
+      TZ: Asia/Tokyo

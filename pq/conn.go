@@ -5,8 +5,6 @@ import (
 	"context"
 	"crypto/md5"
 	"crypto/sha256"
-	"database/sql"
-	"database/sql/driver"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -22,8 +20,11 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/lib/pq/oid"
-	"github.com/lib/pq/scram"
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
+
+	"github.com/sivchari/database/pq/oid"
+	"github.com/sivchari/database/pq/scram"
 )
 
 // Common error types

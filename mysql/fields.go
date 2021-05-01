@@ -9,8 +9,9 @@
 package mysql
 
 import (
-	"database/sql"
 	"reflect"
+
+	"github.com/sivchari/database/sql"
 )
 
 func (mf *mysqlField) typeDatabaseName() string {

@@ -6,7 +6,6 @@ package sql
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -17,6 +16,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 func init() {

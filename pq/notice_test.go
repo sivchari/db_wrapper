@@ -3,9 +3,10 @@
 package pq
 
 import (
-	"database/sql"
-	"database/sql/driver"
 	"testing"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestConnectorWithNoticeHandler_Simple(t *testing.T) {

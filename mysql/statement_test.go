@@ -10,9 +10,10 @@ package mysql
 
 import (
 	"bytes"
-	"database/sql/driver"
 	"encoding/json"
 	"testing"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestConvertDerivedString(t *testing.T) {

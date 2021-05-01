@@ -9,9 +9,10 @@
 package mysql
 
 import (
-	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 // Scan implements the Scanner interface.

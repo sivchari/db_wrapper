@@ -6,12 +6,13 @@ package sql_test
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"log"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/sivchari/database/sql"
 )
 
 var pool *sql.DB // Database connection pool.

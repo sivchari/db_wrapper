@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"database/sql"
-	"database/sql/driver"
 	"io"
 	"math/rand"
 	"net"
@@ -16,7 +14,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lib/pq/oid"
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
+
+	"github.com/sivchari/database/pq/oid"
 )
 
 var (

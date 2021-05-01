@@ -10,8 +10,9 @@ package mysql
 
 import (
 	"context"
-	"database/sql/driver"
 	"net"
+
+	"github.com/sivchari/database/sql/driver"
 )
 
 type connector struct {

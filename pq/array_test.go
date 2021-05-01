@@ -2,12 +2,13 @@ package pq
 
 import (
 	"bytes"
-	"database/sql"
-	"database/sql/driver"
 	"math/rand"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/sivchari/database/sql"
+	"github.com/sivchari/database/sql/driver"
 )
 
 func TestParseArray(t *testing.T) {
