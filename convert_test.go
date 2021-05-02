@@ -154,8 +154,8 @@ func conversionTests() []conversionTest {
 		{s: uint16(0), d: &scanbool, wantbool: false},
 
 		// Not bools
-		{s: "yup", d: &scanbool, wanterr: `sql/driver: couldn't convert "yup" into type bool`},
-		{s: 2, d: &scanbool, wanterr: `sql/driver: couldn't convert 2 into type bool`},
+		{s: "yup", d: &scanbool, wanterr: `.sql/driver: couldn't convert "yup" into type bool`},
+		{s: 2, d: &scanbool, wanterr: `.sql/driver: couldn't convert 2 into type bool`},
 
 		// Floats
 		{s: float64(1.5), d: &scanf64, wantf64: float64(1.5)},
@@ -181,7 +181,7 @@ func conversionTests() []conversionTest {
 		{s: 1.5, d: new(userDefined), wantusrdef: 1.5},
 		{s: int64(123), d: new(userDefined), wantusrdef: 123},
 		{s: "1.5", d: new(userDefined), wantusrdef: 1.5},
-		{s: []byte{1, 2, 3}, d: new(userDefinedSlice), wanterr: `unsupported Scan, storing driver.Value type []uint8 into type *sql.userDefinedSlice`},
+		{s: []byte{1, 2, 3}, d: new(userDefinedSlice), wanterr: `unsupported Scan, storing driver.Value type []uint8 into type *.sql.userDefinedSlice`},
 		{s: "str", d: new(userDefinedString), wantusrstr: "str"},
 
 		// Other errors
