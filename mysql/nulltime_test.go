@@ -12,13 +12,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sivchari/database/driver"
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
 )
 
 var (
 	// Check implementation of interfaces
-	_ driver.Valuer = NullTime{}
+	_ driver.Valuer = sql.NullTime{}
 	_ sql.Scanner   = (*NullTime)(nil)
 )
 

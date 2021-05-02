@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sivchari/database/driver"
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
 )
 
 var errNilNotification = errors.New("nil notification")

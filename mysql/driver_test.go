@@ -29,8 +29,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sivchari/database/driver"
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
 )
 
 // Ensure that all the driver interfaces are implemented
@@ -113,9 +113,10 @@ func runTestsWithMultiStatement(t *testing.T, dsn string, tests ...func(dbt *DBT
 	dsn += "&multiStatements=true"
 	var db *sql.DB
 	if _, err := ParseDSN(dsn); err != errInvalidDSNUnsafeCollation {
-		db, err = sql.Open("mysql", dsn)
-		if err != nil {
-			t.Fatalf("error connecting: %s", err.Error())
+		uptr := sql.Open("mysql", dsn)
+		db := sql.GetDBInstance(uptr)
+		if db == nil {
+			t.Fatalf("error connecting: %s", db)
 		}
 		defer db.Close()
 	}
@@ -132,9 +133,10 @@ func runTests(t *testing.T, dsn string, tests ...func(dbt *DBTest)) {
 		t.Skipf("MySQL server not running on %s", netAddr)
 	}
 
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		t.Fatalf("error connecting: %s", err.Error())
+	uptr := sql.Open("mysql", dsn)
+	db := sql.GetDBInstance(uptr)
+	if db == nil {
+		t.Fatalf("error connecting: %s", db)
 	}
 	defer db.Close()
 
@@ -143,9 +145,10 @@ func runTests(t *testing.T, dsn string, tests ...func(dbt *DBTest)) {
 	dsn2 := dsn + "&interpolateParams=true"
 	var db2 *sql.DB
 	if _, err := ParseDSN(dsn2); err != errInvalidDSNUnsafeCollation {
-		db2, err = sql.Open("mysql", dsn2)
-		if err != nil {
-			t.Fatalf("error connecting: %s", err.Error())
+		uptr := sql.Open("mysql", dsn)
+		db2 := sql.GetDBInstance(uptr)
+		if db2 == nil {
+			t.Fatalf("error connecting: %s", db2)
 		}
 		defer db2.Close()
 	}
@@ -153,7 +156,11 @@ func runTests(t *testing.T, dsn string, tests ...func(dbt *DBTest)) {
 	dsn3 := dsn + "&multiStatements=true"
 	var db3 *sql.DB
 	if _, err := ParseDSN(dsn3); err != errInvalidDSNUnsafeCollation {
-		db3, err = sql.Open("mysql", dsn3)
+		uptr := sql.Open("mysql", dsn)
+		db3 = sql.GetDBInstance(uptr)
+		if db3 == nil {
+			t.Fatalf("error connecting: %s", db3)
+		}
 		if err != nil {
 			t.Fatalf("error connecting: %s", err.Error())
 		}
@@ -1348,7 +1355,12 @@ func TestFoundRows(t *testing.T) {
 
 func TestTLS(t *testing.T) {
 	tlsTestReq := func(dbt *DBTest) {
-		if err := dbt.db.Ping(); err != nil {
+		uptr := sql.Open("mysql", dsn)
+		db := sql.GetDBInstance(uptr)
+		if db == nil {
+			t.Fatalf("error connecting: %s", db)
+		}
+		if err := sql.Ping(); err != nil {
 			if err == ErrNoTLS {
 				dbt.Skip("server does not support TLS")
 			} else {

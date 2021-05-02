@@ -15,7 +15,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/sivchari/database/sql/driver"
+	"github.com/sivchari/database/driver"
 )
 
 func TestInterpolateParams(t *testing.T) {

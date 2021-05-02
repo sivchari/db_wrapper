@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/sivchari/database/driver"
 	"github.com/sivchari/database/sql"
-	"github.com/sivchari/database/sql/driver"
 )
 
 func TestNewConnector_WorksWithOpenDB(t *testing.T) {

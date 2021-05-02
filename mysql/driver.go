@@ -21,8 +21,8 @@ import (
 	"net"
 	"sync"
 
-	sql "github.com/sivchari/database/sql"
 	"github.com/sivchari/database/driver"
+	"github.com/sivchari/database/sql"
 )
 
 // MySQLDriver is exported to make the driver directly accessible.
