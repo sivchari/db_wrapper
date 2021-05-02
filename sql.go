@@ -26,6 +26,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -1237,7 +1238,7 @@ type connRequest struct {
 	err  error
 }
 
-var errDBClosed = errors.New(".sql: database is closed")
+var errDBClosed = errors.New("sql: database is closed")
 
 // nextRequestKeyLocked returns the next connection request key.
 // It is assumed that nextRequest will not overflow.
@@ -1679,9 +1680,83 @@ func (db *DB) QueryContext(ctx context.Context, query string, args ...interface{
 //
 // Query uses context.Background internally; to specify the context, use
 // QueryContext.
-func (db *DB) Query(query string, args ...interface{}) (*Rows, error) {
-	return db.QueryContext(context.Background(), query, args...)
+// func (db *DB) Query(query string, args ...interface{}) (*Rows, error) {
+
+// DBInstances ptr instances
+var RowsInstances map[uintptr]*Rows
+
+// GetDBInstance is getter method getting DB struct by uintptr
+func GetRowsInstance(uptr uintptr) *Rows {
+	rows := (*Rows)(unsafe.Pointer(uptr))
+	if rows == nil {
+		log.Fatalf("Rows instance is nil: %v", rows)
+	}
+	return rows
 }
+
+// TODO::test string pattern
+//export Query1
+//func Query1(u uintptr, cQuery *C.char, cArgs *[]C.char) uintptr {
+func Query1(u uintptr, cQuery *C.char, cArgs *C.char) uintptr {
+	// return db.QueryContext(context.Background(), query, args...)
+	query := C.GoString(cQuery)
+	args := C.GoString(cArgs)
+	args = strings.TrimSpace(args)
+	argsSlice := strings.Split(args, ",")
+	params := make([]interface{}, len(argsSlice))
+	for i, v := range argsSlice {
+		params[i] = v
+	}
+	db := GetDBInstance(u)
+	rows, err := db.QueryContext(context.Background(), query, params...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	uptr := uintptr(unsafe.Pointer(rows))
+	if RowsInstances == nil {
+		RowsInstances = make(map[uintptr]*Rows)
+	}
+	RowsInstances[uptr] = rows
+	return uptr
+}
+
+//export Query1
+//func Query1(u uintptr, cQuery *C.char, cArgs **C.char) uintptr {
+//	// return db.QueryContext(context.Background(), query, args...)
+//	query := C.GoString(cQuery)
+//	// args := make([]interface{}, len(cArgs))
+//	args := make([]interface{}, 0, 1)
+//
+//	// start := unsafe.Pointer(&cArgs)
+//	// pointerSize := unsafe.Sizeof(&cArgs)
+//	// for i, v := range cArgs {
+//	// 	args[i] = C.GoString(cArgs[i])
+//	// }
+//	// fmt.Println(start, pointerSize)
+//	cStrs := (*[1 << 30]*C.char)(unsafe.Pointer(cArgs))[:1:1]
+//	// for i := 0; i < int(1); i++ {
+//	// 	pointer := (**C.char)(unsafe.Pointer(uintptr(start) + uintptr(i)*pointerSize))
+//	// 	fmt.Println(C.GoString(*pointer))
+//	// 	args[i] = C.GoString(*pointer)
+//	// }
+//	for _, v := range cStrs {
+//		args = append(args, C.GoString(v))
+//	}
+//	fmt.Println(args)
+//	db := GetDBInstance(u)
+//	rows, err := db.QueryContext(context.Background(), query, args...)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Println(rows.Rowsi)
+//	fmt.Println(rows.Columns())
+//	uptr := uintptr(unsafe.Pointer(rows))
+//	if RowsInstances == nil {
+//		RowsInstances = make(map[uintptr]*Rows)
+//	}
+//	RowsInstances[uptr] = rows
+//	return uptr
+//}
 
 func (db *DB) query(ctx context.Context, query string, args []interface{}, strategy connReuseStrategy) (*Rows, error) {
 	dc, err := db.conn(ctx, strategy)

@@ -71,6 +71,10 @@ extern "C" {
 extern GoUintptr Open(char* cDriverName, char* cDataSourceName);
 extern char* Ping(GoUintptr uptr);
 
+// TODO::test
+//func Query1(u uintptr, cQuery *C.char, cArgs *[]C.char) uintptr {
+extern GoUintptr Query1(GoUintptr u, char* cQuery, char* cArgs);
+
 #ifdef __cplusplus
 }
 #endif
