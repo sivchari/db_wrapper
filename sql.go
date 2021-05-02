@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package sql provides a generic interface around SQL (or SQL-like)
+// Package .sql provides a generic interface around SQL (or SQL-like)
 // databases.
 //
-// The sql package must be used in conjunction with a database driver.
+// The .sql package must be used in conjunction with a database driver.
 // See https://golang.org/s/sqldrivers for a list of drivers.
 //
 // Drivers that do not support context cancellation will not return until
@@ -31,9 +31,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/sivchari/database/mysql"
-	"github.com/sivchari/database/pq"
-
 	"github.com/sivchari/database/driver"
 )
 
@@ -54,10 +51,10 @@ func Register(name string, driver driver.Driver) {
 	driversMu.Lock()
 	defer driversMu.Unlock()
 	if driver == nil {
-		panic("sql: Register driver is nil")
+		panic(".sql: Register driver is nil")
 	}
 	if _, dup := drivers[name]; dup {
-		panic("sql: Register called twice for driver " + name)
+		panic(".sql: Register called twice for driver " + name)
 	}
 	drivers[name] = driver
 }
@@ -113,14 +110,14 @@ type NamedArg struct {
 //         where
 //             TimeCreated < @end
 //             and TimeCreated >= @start;`,
-//         sql.Named("start", startTime),
-//         sql.Named("end", endTime),
+//         .sql.Named("start", startTime),
+//         .sql.Named("end", endTime),
 //     )
 func Named(name string, value interface{}) NamedArg {
 	// This method exists because the go1compat promise
 	// doesn't guarantee that structs don't grow more fields,
 	// so unkeyed struct literals are a vet error. Thus, we don't
-	// want to allow sql.NamedArg{name, value}.
+	// want to allow .sql.NamedArg{name, value}.
 	return NamedArg{Name: name, Value: value}
 }
 
@@ -321,16 +318,16 @@ func (n NullBool) Value() (driver.Value, error) {
 	return n.Bool, nil
 }
 
-// NullTime represents a time.Time that may be null.
-// NullTime implements the Scanner interface so
+// EncodeNullTime represents a time.Time that may be null.
+// EncodeNullTime implements the Scanner interface so
 // it can be used as a scan destination, similar to NullString.
-type NullTime struct {
+type EncodeNullTime struct {
 	Time  time.Time
 	Valid bool // Valid is true if Time is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (n *NullTime) Scan(value interface{}) error {
+func (n *EncodeNullTime) Scan(value interface{}) error {
 	if value == nil {
 		n.Time, n.Valid = time.Time{}, false
 		return nil
@@ -340,7 +337,7 @@ func (n *NullTime) Scan(value interface{}) error {
 }
 
 // Value implements the driver Valuer interface.
-func (n NullTime) Value() (driver.Value, error) {
+func (n EncodeNullTime) Value() (driver.Value, error) {
 	if !n.Valid {
 		return nil, nil
 	}
@@ -377,7 +374,7 @@ type Scanner interface {
 // Example usage:
 //
 //   var outArg string
-//   _, err := db.ExecContext(ctx, "ProcName", sql.Named("Arg1", sql.Out{Dest: &outArg}))
+//   _, err := db.ExecContext(ctx, "ProcName", .sql.Named("Arg1", .sql.Out{Dest: &outArg}))
 type Out struct {
 	_Named_Fields_Required struct{}
 
@@ -394,13 +391,13 @@ type Out struct {
 // ErrNoRows is returned by Scan when QueryRow doesn't return a
 // row. In such a case, QueryRow returns a placeholder *Row value that
 // defers this error until a Scan.
-var ErrNoRows = errors.New("sql: no rows in result set")
+var ErrNoRows = errors.New(".sql: no rows in result set")
 
 // DB is a database handle representing a pool of zero or more
 // underlying connections. It's safe for concurrent use by multiple
 // goroutines.
 //
-// The sql package creates and frees connections automatically; it
+// The .sql package creates and frees connections automatically; it
 // also maintains a free pool of idle connections. If the database has
 // a concept of per-connection state, such state can be reliably observed
 // within a transaction (Tx) or connection (Conn). Once DB.Begin is called, the
@@ -557,7 +554,7 @@ func (dc *driverConn) closeDBLocked() func() error {
 	dc.Lock()
 	defer dc.Unlock()
 	if dc.closed {
-		return func() error { return errors.New("sql: duplicate driverConn close") }
+		return func() error { return errors.New(".sql: duplicate driverConn close") }
 	}
 	dc.closed = true
 	return dc.db.removeDepLocked(dc, dc)
@@ -567,7 +564,7 @@ func (dc *driverConn) Close() error {
 	dc.Lock()
 	if dc.closed {
 		dc.Unlock()
-		return errors.New("sql: duplicate driverConn close")
+		return errors.New(".sql: duplicate driverConn close")
 	}
 	dc.closed = true
 	dc.Unlock() // not defer; removeDep finalClose calls may need to lock
@@ -794,12 +791,12 @@ func Open(cDriverName, cDataSourceName *C.char) uintptr {
 	driveri, ok := drivers[driverName]
 	driversMu.RUnlock()
 	if !ok {
-		log.Fatalf("sql: unknown driver %q (forgotten import?)", driverName)
+		log.Fatalf(".sql: unknown driver %q (forgotten import?)", driverName)
 	}
 	if driverCtx, ok := driveri.(driver.DriverContext); ok {
 		connector, err := driverCtx.OpenConnector(dataSourceName)
 		if err != nil {
-			log.Fatalf("sql: failed to connect: %v", err)
+			log.Fatalf(".sql: failed to connect: %v", err)
 		}
 		return openDB(connector)
 	}
@@ -813,9 +810,9 @@ const _sqlite3 = "sqlite3"
 func register(driverName, dataSourceName string) {
 	switch driverName {
 	case _mysql:
-		drivers[driverName] = mysql.MySQLDriver{}
+		drivers[driverName] = MySQLDriver{}
 	case _postgres:
-		drivers[driverName] = pq.Driver{}
+		drivers[driverName] = Driver{}
 	case _sqlite3:
 	default:
 	}
@@ -1240,7 +1237,7 @@ type connRequest struct {
 	err  error
 }
 
-var errDBClosed = errors.New("sql: database is closed")
+var errDBClosed = errors.New(".sql: database is closed")
 
 // nextRequestKeyLocked returns the next connection request key.
 // It is assumed that nextRequest will not overflow.
@@ -1418,7 +1415,7 @@ func (db *DB) putConn(dc *driverConn, err error, resetSession bool) {
 		if debugGetPut {
 			fmt.Printf("putConn(%v) DUPLICATE was: %s\n\nPREVIOUS was: %s", dc, stack(), db.lastPut[dc])
 		}
-		panic("sql: connection returned that was never out")
+		panic(".sql: connection returned that was never out")
 	}
 
 	if err != driver.ErrBadConn && dc.expired(db.maxLifetime) {
@@ -1790,7 +1787,7 @@ func (db *DB) QueryRow(query string, args ...interface{}) *Row {
 // BeginTx starts a transaction.
 //
 // The provided context is used until the transaction is committed or rolled back.
-// If the context is canceled, the sql package will roll back
+// If the context is canceled, the .sql package will roll back
 // the transaction. Tx.Commit will return an error if the context provided to
 // BeginTx is canceled.
 //
@@ -1867,7 +1864,7 @@ func (db *DB) Driver() driver.Driver {
 
 // ErrConnDone is returned by any operation that is performed on a connection
 // that has already been returned to the connection pool.
-var ErrConnDone = errors.New("sql: connection is already closed")
+var ErrConnDone = errors.New(".sql: connection is already closed")
 
 // Conn returns a single connection by either opening a new connection
 // or returning an existing connection from the connection pool. Conn will
@@ -2030,7 +2027,7 @@ func (c *Conn) Raw(f func(driverConn interface{}) error) (err error) {
 // BeginTx starts a transaction.
 //
 // The provided context is used until the transaction is committed or rolled back.
-// If the context is canceled, the sql package will roll back
+// If the context is canceled, the .sql package will roll back
 // the transaction. Tx.Commit will return an error if the context provided to
 // BeginTx is canceled.
 //
@@ -2046,7 +2043,7 @@ func (c *Conn) BeginTx(ctx context.Context, opts *TxOptions) (*Tx, error) {
 }
 
 // closemuRUnlockCondReleaseConn read unlocks closemu
-// as the sql operation is done with the dc.
+// as the .sql operation is done with the dc.
 func (c *Conn) closemuRUnlockCondReleaseConn(err error) {
 	c.closemu.RUnlock()
 	if err == driver.ErrBadConn {
@@ -2158,7 +2155,7 @@ func (tx *Tx) isDone() bool {
 
 // ErrTxDone is returned by any operation that is performed on a transaction
 // that has already been committed or rolled back.
-var ErrTxDone = errors.New("sql: transaction has already been committed or rolled back")
+var ErrTxDone = errors.New(".sql: transaction has already been committed or rolled back")
 
 // close returns the connection to the pool and
 // must only be called by Tx.rollback or Tx.Commit while
@@ -2352,7 +2349,7 @@ func (tx *Tx) StmtContext(ctx context.Context, stmt *Stmt) *Stmt {
 	defer release(nil)
 
 	if tx.db != stmt.db {
-		return &Stmt{stickyErr: errors.New("sql: Tx.Stmt: statement from different database used")}
+		return &Stmt{stickyErr: errors.New(".sql: Tx.Stmt: statement from different database used")}
 	}
 	var si driver.Stmt
 	var parentStmt *Stmt
@@ -2657,7 +2654,7 @@ func (s *Stmt) connStmt(ctx context.Context, strategy connReuseStrategy) (dc *dr
 	s.mu.Lock()
 	if s.closed {
 		s.mu.Unlock()
-		err = errors.New("sql: statement is closed")
+		err = errors.New(".sql: statement is closed")
 		return
 	}
 
@@ -3030,8 +3027,8 @@ func (rs *Rows) Err() error {
 	return rs.lasterrOrErrLocked(nil)
 }
 
-var errRowsClosed = errors.New("sql: Rows are closed")
-var errNoRows = errors.New("sql: no Rows available")
+var errRowsClosed = errors.New(".sql: Rows are closed")
+var errNoRows = errors.New(".sql: no Rows available")
 
 // Columns returns the column names.
 // Columns returns an error if the rows are closed.
@@ -3162,7 +3159,7 @@ func rowsColumnInfoSetupConnLocked(rowsi driver.Rows) []*ColumnType {
 // number of columns in Rows.
 //
 // Scan converts columns read from the database into the following
-// common Go types and special types provided by the sql package:
+// common Go types and special types provided by the .sql package:
 //
 //    *string
 //    *[]byte
@@ -3232,15 +3229,15 @@ func (rs *Rows) Scan(dest ...interface{}) error {
 	rs.closemu.RUnlock()
 
 	if rs.lastcols == nil {
-		return errors.New("sql: Scan called without calling Next")
+		return errors.New(".sql: Scan called without calling Next")
 	}
 	if len(dest) != len(rs.lastcols) {
-		return fmt.Errorf("sql: expected %d destination arguments in Scan, not %d", len(rs.lastcols), len(dest))
+		return fmt.Errorf(".sql: expected %d destination arguments in Scan, not %d", len(rs.lastcols), len(dest))
 	}
 	for i, sv := range rs.lastcols {
 		err := convertAssignRows(dest[i], sv, rs)
 		if err != nil {
-			return fmt.Errorf(`sql: Scan error on column index %d, name %q: %w`, i, rs.Rowsi.Columns()[i], err)
+			return fmt.Errorf(`.sql: Scan error on column index %d, name %q: %w`, i, rs.Rowsi.Columns()[i], err)
 		}
 	}
 	return nil
@@ -3321,7 +3318,7 @@ func (r *Row) Scan(dest ...interface{}) error {
 	defer r.rows.Close()
 	for _, dp := range dest {
 		if _, ok := dp.(*RawBytes); ok {
-			return errors.New("sql: RawBytes isn't allowed on Row.Scan")
+			return errors.New(".sql: RawBytes isn't allowed on Row.Scan")
 		}
 	}
 

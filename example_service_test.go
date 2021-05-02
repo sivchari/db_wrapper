@@ -16,7 +16,8 @@ import (
 
 func Example_openDBService() {
 	// Opening a driver typically will not attempt to connect to the database.
-	uptr := Open("driver-name", "database=test1")
+	tStr1, tStr2 := convertStringFromGoToC("driver-name", "database=test1")
+	uptr := Open(tStr1, tStr2)
 	db := GetDBInstance(uptr)
 	if db == nil {
 		// This will not be a connection error, but a DSN parse error or
