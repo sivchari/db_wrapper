@@ -858,12 +858,13 @@ func (db *DB) PingContext(ctx context.Context) error {
 // PingContext.
 
 //export Ping
-func Ping(uptr uintptr) *C.char {
+func Ping(uptr uintptr) bool {
 	db := GetDBInstance(uptr)
 	if err := db.PingContext(context.Background()); err != nil {
-		log.Fatal(err)
+		log.Printf("failed to Ping: %v", err)
+		return false
 	}
-	return C.CString("Ping OK!")
+	return true
 }
 
 // Close closes the database and prevents new queries from starting.
@@ -1695,9 +1696,8 @@ func GetRowsInstance(uptr uintptr) *Rows {
 	return rows
 }
 
-// TODO::test string pattern
-//export Query1
-func Query1(u uintptr, cQuery *C.char) uintptr {
+//export QueryExec
+func QueryExec(u uintptr, cQuery *C.char) uintptr {
 	query := C.GoString(cQuery)
 	db := GetDBInstance(u)
 	// TODO::remove args if we can observe the area of influence
