@@ -70,6 +70,7 @@ extern "C" {
 
 extern GoUintptr Open(char* cDriverName, char* cDataSourceName);
 extern GoUint8 Ping(GoUintptr uptr);
+extern GoUint8 DBClose(GoUintptr uptr);
 extern GoUintptr StmtPrepare(GoUintptr u, char* cQuery);
 extern GoUintptr QueryExec(GoUintptr u, char* cQuery);
 extern GoUintptr StmtExec(GoUintptr u, char* cArgs);

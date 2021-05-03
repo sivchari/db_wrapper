@@ -6,3 +6,5 @@ echo "Connectted!"
 echo "exec query"
 let stmt = db.prepare("UPDATE sample SET en_name = ? WHERE id = ?")
 discard stmt.exec("NNNim", 1)
+echo "close"
+echo db.close

@@ -47,6 +47,8 @@ proc stmtFormat(args: varargs[string, `$`]): string =
 
 proc open*(driverName, dataSourceName: cstring):GoDBConnection {.dynlib: "../../sql.so", importc: "Open".}
 
+proc close*(uptr: GoDBConnection):bool {.dynlib: "../../sql.so", importc: "DBClose".}
+
 proc ping*(uptr: GoDBConnection):bool {.dynlib: "../../sql.so", importc: "Ping".}
 
 proc queryExec(uptr: GoDBConnection, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "QueryExec".}
