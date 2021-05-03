@@ -31,9 +31,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/sivchari/database/mysql"
-	"github.com/sivchari/database/pq"
-
 	"github.com/sivchari/database/driver"
 )
 
@@ -321,16 +318,16 @@ func (n NullBool) Value() (driver.Value, error) {
 	return n.Bool, nil
 }
 
-// NullTime represents a time.Time that may be null.
-// NullTime implements the Scanner interface so
+// EncodeNullTime represents a time.Time that may be null.
+// EncodeNullTime implements the Scanner interface so
 // it can be used as a scan destination, similar to NullString.
-type NullTime struct {
+type EncodeNullTime struct {
 	Time  time.Time
 	Valid bool // Valid is true if Time is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (n *NullTime) Scan(value interface{}) error {
+func (n *EncodeNullTime) Scan(value interface{}) error {
 	if value == nil {
 		n.Time, n.Valid = time.Time{}, false
 		return nil
@@ -340,7 +337,7 @@ func (n *NullTime) Scan(value interface{}) error {
 }
 
 // Value implements the driver Valuer interface.
-func (n NullTime) Value() (driver.Value, error) {
+func (n EncodeNullTime) Value() (driver.Value, error) {
 	if !n.Valid {
 		return nil, nil
 	}
@@ -813,9 +810,9 @@ const _sqlite3 = "sqlite3"
 func register(driverName, dataSourceName string) {
 	switch driverName {
 	case _mysql:
-		drivers[driverName] = mysql.MySQLDriver{}
+		drivers[driverName] = MySQLDriver{}
 	case _postgres:
-		drivers[driverName] = pq.Driver{}
+		drivers[driverName] = Driver{}
 	case _sqlite3:
 	default:
 	}
@@ -1240,7 +1237,7 @@ type connRequest struct {
 	err  error
 }
 
-var errDBClosed = errors.New("sql: database is closed")
+var errDBClosed = errors.New(".sql: database is closed")
 
 // nextRequestKeyLocked returns the next connection request key.
 // It is assumed that nextRequest will not overflow.
@@ -1682,8 +1679,38 @@ func (db *DB) QueryContext(ctx context.Context, query string, args ...interface{
 //
 // Query uses context.Background internally; to specify the context, use
 // QueryContext.
-func (db *DB) Query(query string, args ...interface{}) (*Rows, error) {
-	return db.QueryContext(context.Background(), query, args...)
+//func (db *DB) Query(query string, args ...interface{}) (*Rows, error) {
+//	return db.QueryContext(context.Background(), query, args...)
+//}
+
+// DBInstances ptr instances
+var RowsInstances map[uintptr]*Rows
+
+// GetDBInstance is getter method getting DB struct by uintptr
+func GetRowsInstance(uptr uintptr) *Rows {
+	rows := (*Rows)(unsafe.Pointer(uptr))
+	if rows == nil {
+		log.Fatalf("Rows instance is nil: %v", rows)
+	}
+	return rows
+}
+
+// TODO::test string pattern
+//export Query1
+func Query1(u uintptr, cQuery *C.char) uintptr {
+	query := C.GoString(cQuery)
+	db := GetDBInstance(u)
+	// TODO::remove args if we can observe the area of influence
+	rows, err := db.QueryContext(context.Background(), query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	uptr := uintptr(unsafe.Pointer(rows))
+	if RowsInstances == nil {
+		RowsInstances = make(map[uintptr]*Rows)
+	}
+	RowsInstances[uptr] = rows
+	return uptr
 }
 
 func (db *DB) query(ctx context.Context, query string, args []interface{}, strategy connReuseStrategy) (*Rows, error) {

@@ -109,13 +109,13 @@ func ctxDriverBegin(ctx context.Context, opts *TxOptions, ci driver.Conn) (drive
 		// Check the transaction level. If the transaction level is non-default
 		// then return an error here as the BeginTx driver value is not supported.
 		if opts.Isolation != LevelDefault {
-			return nil, errors.New("sql: driver does not support non-default isolation level")
+			return nil, errors.New(".sql: driver does not support non-default isolation level")
 		}
 
 		// If a read-only transaction is requested return an error as the
 		// BeginTx driver value is not supported.
 		if opts.ReadOnly {
-			return nil, errors.New("sql: driver does not support read-only transactions")
+			return nil, errors.New(".sql: driver does not support read-only transactions")
 		}
 	}
 
@@ -139,7 +139,7 @@ func namedValueToValue(named []driver.NamedValue) ([]driver.Value, error) {
 	dargs := make([]driver.Value, len(named))
 	for n, param := range named {
 		if len(param.Name) > 0 {
-			return nil, errors.New("sql: driver does not support the use of Named Parameters")
+			return nil, errors.New(".sql: driver does not support the use of Named Parameters")
 		}
 		dargs[n] = param.Value
 	}

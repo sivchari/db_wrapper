@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"log"
 	"os"
@@ -30,7 +29,8 @@ func Example_openDBCLI() {
 	var err error
 
 	// Opening a driver typically will not attempt to connect to the database.
-	uptr := Open("driver-name", *dsn)
+	tStr1, tStr2 := convertStringFromGoToC("driver-name", *dsn)
+	uptr := Open(tStr1, tStr2)
 	db := GetDBInstance(uptr)
 	if db == nil {
 		// This will not be a connection error, but a DSN parse error or
@@ -79,7 +79,7 @@ func Query(ctx context.Context, id int64) {
 	defer cancel()
 
 	var name string
-	err := pool.QueryRowContext(ctx, "select p.name from people as p where p.id = :id;", sql.Named("id", id)).Scan(&name)
+	err := pool.QueryRowContext(ctx, "select p.name from people as p where p.id = :id;", Named("id", id)).Scan(&name)
 	if err != nil {
 		log.Fatal("unable to execute search query", err)
 	}

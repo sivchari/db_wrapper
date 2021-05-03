@@ -71,6 +71,9 @@ extern "C" {
 extern GoUintptr Open(char* cDriverName, char* cDataSourceName);
 extern char* Ping(GoUintptr uptr);
 
+// TODO::test string pattern
+extern GoUintptr Query1(GoUintptr u, char* cQuery);
+
 #ifdef __cplusplus
 }
 #endif

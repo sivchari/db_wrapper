@@ -550,7 +550,7 @@ var valuerReflectType = reflect.TypeOf((*driver.Valuer)(nil)).Elem()
 // still use nil pointers to those types to mean nil/NULL, just like
 // string/*string.
 //
-// This function is mirrored in the database/sql/driver package.
+// This function is mirrored in the database/.sql/driver package.
 func callValuerValue(vr driver.Valuer) (v driver.Value, err error) {
 	if rv := reflect.ValueOf(vr); rv.Kind() == reflect.Ptr &&
 		rv.IsNil() &&
