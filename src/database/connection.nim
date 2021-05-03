@@ -1,6 +1,8 @@
 type
   GoDBConnection = pointer
   QueryRows = pointer
+  Stmt = pointer
+  Result = pointer
 
 proc dbQuote(s: string): string =
   ## DB quotes the string.
@@ -32,10 +34,31 @@ proc dbFormat(formatstr: string, args: varargs[string, `$`]): string =
     else:
       add(result, c)
 
+proc stmtFormat(args: varargs[string, `$`]): string =
+  result = ""
+  let argsLen = args.len()
+  var count = 1
+  for c in items(args):
+    if count == argsLen:
+      add(result, c)
+    else:
+      add(result, c & ",")
+      inc(count)
+
 proc open*(driverName, dataSourceName: cstring):GoDBConnection {.dynlib: "../../sql.so", importc: "Open".}
+
 proc ping*(uptr: GoDBConnection):bool {.dynlib: "../../sql.so", importc: "Ping".}
+
 proc queryExec(uptr: GoDBConnection, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "QueryExec".}
 
 proc query*(uptr: GoDBConnection, query: string, args: varargs[string, `$`]):QueryRows =
   let q = dbFormat(query, args)
   uptr.queryExec(q)
+
+proc prepare*(uptr: GoDBConnection, query: cstring):Stmt {.dynlib: "../../sql.so", importc: "StmtPrepare".}
+
+proc stmtExec(uptr: Stmt, args: cstring):Result {.dynlib: "../../sql.so", importc: "StmtExec".}
+
+proc exec*(uptr: Stmt, args: varargs[string, `$`]):Result =
+  let q = stmtFormat(args)
+  uptr.stmtExec(q)

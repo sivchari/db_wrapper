@@ -26,6 +26,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -1526,6 +1527,18 @@ func (db *DB) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
 	return stmt, err
 }
 
+// StmtInstances ptr instances
+var StmtInstances map[uintptr]*Stmt
+
+// GetStmtInstance is getter method getting Stmt struct by uintptr
+func GetStmtInstance(uptr uintptr) *Stmt {
+	stmt := (*Stmt)(unsafe.Pointer(uptr))
+	if stmt == nil {
+		log.Fatalf("Stmt instance is nil: %v", stmt)
+	}
+	return stmt
+}
+
 // Prepare creates a prepared statement for later queries or executions.
 // Multiple queries or executions may be run concurrently from the
 // returned statement.
@@ -1534,8 +1547,24 @@ func (db *DB) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
 //
 // Prepare uses context.Background internally; to specify the context, use
 // PrepareContext.
-func (db *DB) Prepare(query string) (*Stmt, error) {
-	return db.PrepareContext(context.Background(), query)
+// func (db *DB) Prepare(query string) (*Stmt, error) {
+// 	return db.PrepareContext(context.Background(), query)
+// }
+
+//export StmtPrepare
+func StmtPrepare(u uintptr, cQuery *C.char) uintptr {
+	query := C.GoString(cQuery)
+	db := GetDBInstance(u)
+	stmt, err := db.PrepareContext(context.Background(), query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	uptr := uintptr(unsafe.Pointer(stmt))
+	if StmtInstances == nil {
+		StmtInstances = make(map[uintptr]*Stmt)
+	}
+	StmtInstances[uptr] = stmt
+	return uptr
 }
 
 func (db *DB) prepare(ctx context.Context, query string, strategy connReuseStrategy) (*Stmt, error) {
@@ -1684,10 +1713,10 @@ func (db *DB) QueryContext(ctx context.Context, query string, args ...interface{
 //	return db.QueryContext(context.Background(), query, args...)
 //}
 
-// DBInstances ptr instances
+// RowsInstances ptr instances
 var RowsInstances map[uintptr]*Rows
 
-// GetDBInstance is getter method getting DB struct by uintptr
+// GetRowsInstance is getter method getting DB struct by uintptr
 func GetRowsInstance(uptr uintptr) *Rows {
 	rows := (*Rows)(unsafe.Pointer(uptr))
 	if rows == nil {
@@ -2613,8 +2642,8 @@ func (s *Stmt) ExecContext(ctx context.Context, args ...interface{}) (Result, er
 			}
 			return nil, err
 		}
-
 		res, err = resultFromStatement(ctx, dc.ci, ds, args...)
+
 		releaseConn(err)
 		if err != driver.ErrBadConn {
 			return res, err
@@ -2628,8 +2657,42 @@ func (s *Stmt) ExecContext(ctx context.Context, args ...interface{}) (Result, er
 //
 // Exec uses context.Background internally; to specify the context, use
 // ExecContext.
-func (s *Stmt) Exec(args ...interface{}) (Result, error) {
-	return s.ExecContext(context.Background(), args...)
+
+// func (s *Stmt) Exec(args ...interface{}) (Result, error) {
+// 	return s.ExecContext(context.Background(), args...)
+// }
+
+// ResultInstances ptr instances
+var ResultInstances map[uintptr]*Result
+
+// GetResultInstance is getter method getting DB struct by uintptr
+func GetResultInstance(uptr uintptr) *Result {
+	result := (*Result)(unsafe.Pointer(uptr))
+	if result == nil {
+		log.Fatalf("Rows instance is nil: %v", result)
+	}
+	return result
+}
+
+//export StmtExec
+func StmtExec(u uintptr, cArgs *C.char) uintptr {
+	stmt := GetStmtInstance(u)
+	args := C.GoString(cArgs)
+	strSlice := strings.Split(args, ",")
+	vargs := make([]interface{}, len(strSlice))
+	for i, v := range strSlice {
+		vargs[i] = interface{}(v)
+	}
+	result, err := stmt.ExecContext(context.Background(), vargs...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	uptr := uintptr(unsafe.Pointer(&result))
+	if ResultInstances == nil {
+		ResultInstances = make(map[uintptr]*Result)
+	}
+	ResultInstances[uptr] = &result
+	return uptr
 }
 
 func resultFromStatement(ctx context.Context, ci driver.Conn, ds *driverStmt, args ...interface{}) (Result, error) {
