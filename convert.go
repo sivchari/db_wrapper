@@ -192,14 +192,14 @@ func driverArgsConnLocked(ci driver.Conn, ds *driverStmt, args []interface{}) ([
 			}
 			goto nextCheck
 		default:
-			return nil, fmt.Errorf("sql: converting argument %s type: %v", describeNamedValue(nv), err)
+			return nil, fmt.Errorf(".sql: converting argument %s type: %v", describeNamedValue(nv), err)
 		}
 	}
 
 	// Check the length of arguments after conversion to allow for omitted
 	// arguments.
 	if want != -1 && len(nvargs) != want {
-		return nil, fmt.Errorf("sql: expected %d arguments, got %d", want, len(nvargs))
+		return nil, fmt.Errorf(".sql: expected %d arguments, got %d", want, len(nvargs))
 	}
 
 	return nvargs, nil

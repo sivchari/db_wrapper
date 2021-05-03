@@ -1,7 +1,0 @@
-.db
-*.test
-*~
-*.swp
-.idea
-.vscode
-.go.mod
