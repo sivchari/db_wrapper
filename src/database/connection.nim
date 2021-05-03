@@ -33,8 +33,8 @@ proc dbFormat(formatstr: string, args: varargs[string, `$`]): string =
       add(result, c)
 
 proc open*(driverName, dataSourceName: cstring):GoDBConnection {.dynlib: "../../sql.so", importc: "Open".}
-proc ping*(uptr: GoDBConnection):cstring {.dynlib: "../../sql.so", importc: "Ping".}
-proc queryExec(uptr: GoDBConnection, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "Query1".}
+proc ping*(uptr: GoDBConnection):bool {.dynlib: "../../sql.so", importc: "Ping".}
+proc queryExec(uptr: GoDBConnection, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "QueryExec".}
 
 proc query*(uptr: GoDBConnection, query: string, args: varargs[string, `$`]):QueryRows =
   let q = dbFormat(query, args)
