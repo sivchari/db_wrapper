@@ -192,14 +192,14 @@ func driverArgsConnLocked(ci driver.Conn, ds *driverStmt, args []interface{}) ([
 			}
 			goto nextCheck
 		default:
-			return nil, fmt.Errorf(".sql: converting argument %s type: %v", describeNamedValue(nv), err)
+			return nil, fmt.Errorf("sql: converting argument %s type: %v", describeNamedValue(nv), err)
 		}
 	}
 
 	// Check the length of arguments after conversion to allow for omitted
 	// arguments.
 	if want != -1 && len(nvargs) != want {
-		return nil, fmt.Errorf(".sql: expected %d arguments, got %d", want, len(nvargs))
+		return nil, fmt.Errorf("sql: expected %d arguments, got %d", want, len(nvargs))
 	}
 
 	return nvargs, nil
@@ -550,7 +550,7 @@ var valuerReflectType = reflect.TypeOf((*driver.Valuer)(nil)).Elem()
 // still use nil pointers to those types to mean nil/NULL, just like
 // string/*string.
 //
-// This function is mirrored in the database/.sql/driver package.
+// This function is mirrored in the database/sql/driver package.
 func callValuerValue(vr driver.Valuer) (v driver.Value, err error) {
 	if rv := reflect.ValueOf(vr); rv.Kind() == reflect.Ptr &&
 		rv.IsNil() &&
