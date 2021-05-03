@@ -1237,7 +1237,7 @@ type connRequest struct {
 	err  error
 }
 
-var errDBClosed = errors.New(".sql: database is closed")
+var errDBClosed = errors.New("sql: database is closed")
 
 // nextRequestKeyLocked returns the next connection request key.
 // It is assumed that nextRequest will not overflow.
