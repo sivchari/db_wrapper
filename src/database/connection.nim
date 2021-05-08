@@ -60,13 +60,19 @@ proc query*(uptr: GoDBConnection, query: string, args: varargs[string, `$`]):Que
   let q = dbFormat(query, args)
   uptr.queryExec(q)
 
-proc getColumns*(uptr: QueryRows):Columns {.dynlib: "../../sql.so", importc: "GetColumns".}
+proc getColumns(uptr: QueryRows):Columns {.dynlib: "../../sql.so", importc: "GetColumns".}
+
+proc columnNames*(uptr: QueryRows):seq[string] =
+  result = uptr.getColumns.cstringArrayToSeq
 
 proc `[]`*(uptr: QueryRows, i: int):Rows {.dynlib: "../../sql.so", importc: "GetRow".}
 
-proc getTypes*(uptr: QueryRows):Types {.dynlib: "../../sql.so", importc: "GetTypes".}
+proc getTypes(uptr: QueryRows):Types {.dynlib: "../../sql.so", importc: "GetTypes".}
 
-proc getCount(uptr:QueryRows): int {.dynlib: "../../sql.so", importc: "GetCount".}
+proc columnTypes*(uptr: QueryRows):seq[string] =
+  result = uptr.getTypes.cstringArrayToSeq
+
+proc getCount(uptr:QueryRows):int {.dynlib: "../../sql.so", importc: "GetCount".}
 
 proc all*(uptr: QueryRows):seq[seq[string]] =
   let c = uptr.getCount
