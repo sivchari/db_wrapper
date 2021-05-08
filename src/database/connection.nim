@@ -3,6 +3,9 @@ type
   QueryRows = pointer
   Stmt = pointer
   Result = pointer
+  Rows = cstringArray
+  Columns = cstringArray
+  Types = cstringArray
 
 proc dbQuote(s: string): string =
   ## DB quotes the string.
@@ -56,6 +59,22 @@ proc queryExec(uptr: GoDBConnection, query: cstring):QueryRows {.dynlib: "../../
 proc query*(uptr: GoDBConnection, query: string, args: varargs[string, `$`]):QueryRows =
   let q = dbFormat(query, args)
   uptr.queryExec(q)
+
+proc getColumns*(uptr: QueryRows):Columns {.dynlib: "../../sql.so", importc: "GetColumns".}
+
+proc `[]`*(uptr: QueryRows, i: int):Rows {.dynlib: "../../sql.so", importc: "GetRow".}
+
+proc getTypes*(uptr: QueryRows):Types {.dynlib: "../../sql.so", importc: "GetTypes".}
+
+proc getCount(uptr:QueryRows): int {.dynlib: "../../sql.so", importc: "GetCount".}
+
+proc all*(uptr: QueryRows):seq[seq[string]] =
+  let c = uptr.getCount
+  var rows: seq[seq[string]]
+  for i in 0..<c:
+    let row = uptr[i]
+    rows.add(row.cstringArrayToSeq)
+  result = rows
 
 proc prepare*(uptr: GoDBConnection, query: cstring):Stmt {.dynlib: "../../sql.so", importc: "StmtPrepare".}
 
