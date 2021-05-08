@@ -1,11 +1,12 @@
 type
-  GoDBConnection = pointer
+  DBConnection = distinct pointer
   QueryRows = pointer
   Stmt = pointer
   Result = pointer
   Rows = cstringArray
   Columns = cstringArray
   Types = cstringArray
+  Transaction = distinct pointer
 
 proc dbQuote(s: string): string =
   ## DB quotes the string.
@@ -48,15 +49,15 @@ proc stmtFormat(args: varargs[string, `$`]): string =
       add(result, c & ",")
       inc(count)
 
-proc open*(driverName, dataSourceName: cstring, connectionPool: cint = 1):GoDBConnection {.dynlib: "../../sql.so", importc: "Open".}
+proc open*(driverName, dataSourceName: cstring, connectionPool: cint = 1):DBConnection {.dynlib: "../../sql.so", importc: "Open".}
 
-proc close*(uptr: GoDBConnection):bool {.dynlib: "../../sql.so", importc: "DBClose".}
+proc close*(uptr: DBConnection):bool {.dynlib: "../../sql.so", importc: "DBClose".}
 
-proc ping*(uptr: GoDBConnection):bool {.dynlib: "../../sql.so", importc: "Ping".}
+proc ping*(uptr: DBConnection):bool {.dynlib: "../../sql.so", importc: "Ping".}
 
-proc queryExec(uptr: GoDBConnection, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "QueryExec".}
+proc queryExec(uptr: DBConnection, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "QueryExec".}
 
-proc query*(uptr: GoDBConnection, query: string, args: varargs[string, `$`]):QueryRows =
+proc query*(uptr: DBConnection, query: string, args: varargs[string, `$`]):QueryRows =
   let q = dbFormat(query, args)
   uptr.queryExec(q)
 
@@ -65,7 +66,10 @@ proc getColumns(uptr: QueryRows):Columns {.dynlib: "../../sql.so", importc: "Get
 proc columnNames*(uptr: QueryRows):seq[string] =
   result = uptr.getColumns.cstringArrayToSeq
 
-proc `[]`*(uptr: QueryRows, i: int):Rows {.dynlib: "../../sql.so", importc: "GetRow".}
+proc getRow(uptr: QueryRows, i: int):Rows {.dynlib: "../../sql.so", importc: "GetRow".}
+
+proc `[]`*(uptr: QueryRows, i: int):seq[string] =
+  result = uptr.getRow(i).cstringArrayToSeq
 
 proc getTypes(uptr: QueryRows):Types {.dynlib: "../../sql.so", importc: "GetTypes".}
 
@@ -79,13 +83,27 @@ proc all*(uptr: QueryRows):seq[seq[string]] =
   var rows: seq[seq[string]]
   for i in 0..<c:
     let row = uptr[i]
-    rows.add(row.cstringArrayToSeq)
+    rows.add(row)
   result = rows
 
-proc prepare*(uptr: GoDBConnection, query: cstring):Stmt {.dynlib: "../../sql.so", importc: "StmtPrepare".}
+proc prepare*(uptr: DBConnection, query: cstring):Stmt {.dynlib: "../../sql.so", importc: "StmtPrepare".}
 
 proc stmtExec(uptr: Stmt, args: cstring):Result {.dynlib: "../../sql.so", importc: "StmtExec".}
 
 proc exec*(uptr: Stmt, args: varargs[string, `$`]):Result =
   let q = stmtFormat(args)
   uptr.stmtExec(q)
+
+proc beginTransaction*(uptr: DBConnection):Transaction {.dynlib: "../../sql.so", importc: "Begin".}
+
+proc commit*(uptr: Transaction):bool {.dynlib: "../../sql.so", importc: "Commit".}
+
+proc rollback*(uptr: Transaction):bool {.dynlib: "../../sql.so", importc: "Rollback".}
+
+proc prepare*(uptr: Transaction, query: cstring):Stmt {.dynlib: "../../sql.so", importc: "TxPrepare".}
+
+proc queryExec(uptr: Transaction, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "TxQueryExec".}
+
+proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryRows =
+  let q = dbFormat(query, args)
+  uptr.queryExec(q)

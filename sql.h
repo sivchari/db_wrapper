@@ -77,6 +77,11 @@ extern char** GetRow(GoUintptr uptr, GoInt i);
 extern char** GetTypes(GoUintptr uptr);
 extern int GetCount(GoUintptr uptr);
 extern GoUintptr QueryExec(GoUintptr u, char* cQuery);
+extern GoUintptr Begin(GoUintptr u);
+extern GoUint8 Commit(GoUintptr uptr);
+extern GoUint8 Rollback(GoUintptr uptr);
+extern GoUintptr TxPrepare(GoUintptr u, char* cQuery);
+extern GoUintptr TxQueryExec(GoUintptr u, char* cQuery);
 extern GoUintptr StmtExec(GoUintptr u, char* cArgs);
 
 #ifdef __cplusplus
