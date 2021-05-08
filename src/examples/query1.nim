@@ -6,10 +6,9 @@ echo "Connectted!"
 echo "exec query"
 let row = db.query("SELECT * FROM sample WHERE id = ?", 1)
 
-
 let r = row[0]
 
 echo r.cstringArrayToSeq
-echo row.getColumns.cstringArrayToSeq
-echo row.getTypes.cstringArrayToSeq
+echo row.columnNames
+echo row.columnTypes
 echo row.all
