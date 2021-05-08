@@ -48,7 +48,7 @@ proc stmtFormat(args: varargs[string, `$`]): string =
       add(result, c & ",")
       inc(count)
 
-proc open*(driverName, dataSourceName: cstring):GoDBConnection {.dynlib: "../../sql.so", importc: "Open".}
+proc open*(driverName, dataSourceName: cstring, connectionPool: cint = 1):GoDBConnection {.dynlib: "../../sql.so", importc: "Open".}
 
 proc close*(uptr: GoDBConnection):bool {.dynlib: "../../sql.so", importc: "DBClose".}
 

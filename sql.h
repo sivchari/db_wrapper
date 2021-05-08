@@ -68,7 +68,7 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern GoUintptr Open(char* cDriverName, char* cDataSourceName);
+extern GoUintptr Open(char* cDriverName, char* cDataSourceName, GoInt connectionPool);
 extern GoUint8 Ping(GoUintptr uptr);
 extern GoUint8 DBClose(GoUintptr uptr);
 extern GoUintptr StmtPrepare(GoUintptr u, char* cQuery);
