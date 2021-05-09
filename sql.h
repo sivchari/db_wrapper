@@ -68,6 +68,7 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
+extern char* GetDBDriverName(GoUintptr utpr);
 extern GoUintptr Open(char* cDriverName, char* cDataSourceName, GoInt connectionPool);
 extern GoUint8 Ping(GoUintptr uptr);
 extern GoUint8 DBClose(GoUintptr uptr);
@@ -77,6 +78,7 @@ extern char** GetRow(GoUintptr uptr, GoInt i);
 extern char** GetTypes(GoUintptr uptr);
 extern int GetCount(GoUintptr uptr);
 extern GoUintptr QueryExec(GoUintptr u, char* cQuery);
+extern char* GetTxDriverName(GoUintptr utpr);
 extern GoUintptr Begin(GoUintptr u);
 extern GoUint8 Commit(GoUintptr uptr);
 extern GoUint8 Rollback(GoUintptr uptr);

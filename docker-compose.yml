@@ -23,9 +23,9 @@ services:
     tty: true
     command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
     volumes:
-      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/mysql/init:/docker-entrypoint-initdb.d
     ports:
-    - 3306:3306
+      - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: database
@@ -36,7 +36,11 @@ services:
     image: postgres:alpine
     tty: true
     environment:
-      POSTGRES_DB: allographer
+      POSTGRES_DB: database
       POSTGRES_USER: user
       POSTGRES_PASSWORD: Password!
       TZ: Asia/Tokyo
+    volumes:
+      - ./db/pq:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432

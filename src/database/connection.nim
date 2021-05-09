@@ -30,7 +30,7 @@ proc dbQuote(s: string): string =
     else: result.add c
   add(result, '\'')
 
-proc dbFormat(formatstr: string, args: varargs[string, `$`]): string =
+proc mysqlDBFormat(formatstr: string, args: varargs[string, `$`]): string =
   result = ""
   var count = 0
   for c in items(formatstr):
@@ -39,6 +39,15 @@ proc dbFormat(formatstr: string, args: varargs[string, `$`]): string =
       inc(count)
     else:
       add(result, c)
+
+proc pqDBFormat(formatstr: string, args: varargs[string, `$`]): string =
+  result = formatstr
+  var count = 0
+  for c in items(formatStr):
+    if c == '$':
+      let placeNum = count + 1
+      result = result.replace("$" & placeNum.intToStr, dbQuote(args[count]))
+      inc(count)
 
 proc stmtFormat(args: varargs[string, `$`]): string =
   result = ""
@@ -51,6 +60,10 @@ proc stmtFormat(args: varargs[string, `$`]): string =
       add(result, c & ",")
       inc(count)
 
+proc getDriverName(uptr: DBConnection):cstring {.dynlib: "../../sql.so", importc: "GetDBDriverName".}
+
+proc getDriverName(uptr: Transaction):cstring {.dynlib: "../../sql.so", importc: "GetTxDriverName".}
+
 proc open*(driverName, dataSourceName: cstring, connectionPool: cint = 1):DBConnection {.dynlib: "../../sql.so", importc: "Open".}
 
 proc close*(uptr: DBConnection):bool {.dynlib: "../../sql.so", importc: "DBClose".}
@@ -60,7 +73,11 @@ proc ping*(uptr: DBConnection):bool {.dynlib: "../../sql.so", importc: "Ping".}
 proc queryExec(uptr: DBConnection, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "QueryExec".}
 
 proc query*(uptr: DBConnection, query: string, args: varargs[string, `$`]):QueryRows =
-  let q = dbFormat(query, args)
+  let d = uptr.getDriverName
+  var q: string
+  if d == "mysql": q = mysqlDBFormat(query, args)
+  elif d == "postgres": q = pqDBFormat(query, args)
+  else: discard
   uptr.queryExec(q)
 
 proc getColumns(uptr: QueryRows):Columns {.dynlib: "../../sql.so", importc: "GetColumns".}
@@ -107,19 +124,25 @@ proc prepare*(uptr: Transaction, query: cstring):Stmt {.dynlib: "../../sql.so", 
 proc queryExec(uptr: Transaction, query: cstring):QueryRows {.dynlib: "../../sql.so", importc: "TxQueryExec".}
 
 proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryRows =
-  let q = dbFormat(query, args)
+  let d = uptr.getDriverName
+  var q: string
+  if d == "mysql": q = mysqlDBFormat(query, args)
+  elif d == "postgres": q = pqDBFormat(query, args)
+  else: discard
   uptr.queryExec(q)
 
 macro transaction*(db: DBConnection, content: varargs[untyped]): untyped =
   var bodyStr = content.repr.replace("db", "tx")
+  bodyStr = bodyStr.indent(2)
   bodyStr = fmt"""
-let tx = db.beginTransaction
-if isNil pointer(tx): echo "failed to begin transaction"
-try:
-  {bodyStr}
-  if not tx.commit: echo "failed to commit"
-except:
-  echo getCurrentExceptionMsg()
-  if not tx.rollback: echo "failed to rollback"
+block:
+  let tx = db.beginTransaction
+  if isNil pointer(tx): echo "failed to begin transaction"
+  try:
+    {bodyStr}
+    if not tx.commit: echo "failed to commit"
+  except:
+    echo getCurrentExceptionMsg()
+    if not tx.rollback: echo "failed to rollback"
 """
   result = bodyStr.parseStmt
