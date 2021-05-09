@@ -1,3 +1,5 @@
+import macros, strutils, strformat
+
 type
   DBConnection = distinct pointer
   QueryRows = pointer
@@ -107,3 +109,17 @@ proc queryExec(uptr: Transaction, query: cstring):QueryRows {.dynlib: "../../sql
 proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryRows =
   let q = dbFormat(query, args)
   uptr.queryExec(q)
+
+macro transaction*(db: DBConnection, content: varargs[untyped]): untyped =
+  var bodyStr = content.repr.replace("db", "tx")
+  bodyStr = fmt"""
+let tx = db.beginTransaction
+if isNil pointer(tx): echo "failed to begin transaction"
+try:
+  {bodyStr}
+  if not tx.commit: echo "failed to commit"
+except:
+  echo getCurrentExceptionMsg()
+  if not tx.rollback: echo "failed to rollback"
+"""
+  result = bodyStr.parseStmt
