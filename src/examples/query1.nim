@@ -8,7 +8,7 @@ let row = db.query("SELECT * FROM sample WHERE id = ?", 1)
 
 let r = row[0]
 
-echo r.cstringArrayToSeq
+echo r
 echo row.columnNames
 echo row.columnTypes
 echo row.all

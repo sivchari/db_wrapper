@@ -30,7 +30,7 @@ proc dbQuote(s: string): string =
     else: result.add c
   add(result, '\'')
 
-proc mysqlDBFormat(formatstr: string, args: varargs[string, `$`]): string =
+proc dbFormat(formatstr: string, args: varargs[string, `$`]): string =
   result = ""
   var count = 0
   for c in items(formatstr):
@@ -75,9 +75,9 @@ proc queryExec(uptr: DBConnection, query: cstring):QueryRows {.dynlib: "../../sq
 proc query*(uptr: DBConnection, query: string, args: varargs[string, `$`]):QueryRows =
   let d = uptr.getDriverName
   var q: string
-  if d == "mysql": q = mysqlDBFormat(query, args)
+  if d == "mysql": q = dbFormat(query, args)
   elif d == "postgres": q = pqDBFormat(query, args)
-  else: discard
+  elif d == "sqlite3": q = dbFormat(query, args)
   uptr.queryExec(q)
 
 proc getColumns(uptr: QueryRows):Columns {.dynlib: "../../sql.so", importc: "GetColumns".}
@@ -126,9 +126,9 @@ proc queryExec(uptr: Transaction, query: cstring):QueryRows {.dynlib: "../../sql
 proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryRows =
   let d = uptr.getDriverName
   var q: string
-  if d == "mysql": q = mysqlDBFormat(query, args)
+  if d == "mysql": q = dbFormat(query, args)
   elif d == "postgres": q = pqDBFormat(query, args)
-  else: discard
+  elif d == "sqlite3": q = dbFormat(query, args)
   uptr.queryExec(q)
 
 macro transaction*(db: DBConnection, content: varargs[untyped]): untyped =

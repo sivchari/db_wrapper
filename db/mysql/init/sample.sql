@@ -9,5 +9,4 @@ CREATE TABLE IF NOT EXISTS `database`.`sample` (
     ,`ja_name`  VARCHAR(30)
     ,`en_name`  VARCHAR(30)
     ,PRIMARY KEY (`id`)
-    ,INDEX language_id_index (`id`)
 )ENGINE = InnoDB ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

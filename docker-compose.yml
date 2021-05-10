@@ -1,14 +1,5 @@
 version: '3'
 services:
-  go:
-    build:
-      context: .
-      dockerfile: ./docker/go/Dockerfile
-    tty: true
-    environment:
-      TZ: Asia/Tokyo
-    volumes:
-      - ./src/go:/go/src
   nim:
     build:
       context: .
