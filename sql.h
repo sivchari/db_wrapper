@@ -69,7 +69,7 @@ extern "C" {
 #endif
 
 extern char* GetDBDriverName(GoUintptr utpr);
-extern GoUintptr Open(char* cDriverName, char* cDataSourceName, GoInt connectionPool);
+extern GoUintptr DBOpen(char* cDriverName, char* cDataSourceName, GoInt connectionPool);
 extern GoUint8 Ping(GoUintptr uptr);
 extern GoUint8 DBClose(GoUintptr uptr);
 extern GoUintptr StmtPrepare(GoUintptr u, char* cQuery);

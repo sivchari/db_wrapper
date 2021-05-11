@@ -1,6 +1,6 @@
 import ../database/connection
 
-let db = connection.open("mysql", "user:Password!@tcp(127.0.0.1:3306)/database", 10)
+let db = connection.open(MySQL, "user", "Password!", "127.0.0.1", "3306", "database", 10)
 echo db.ping
 echo "Connectted!"
 echo "exec query"
