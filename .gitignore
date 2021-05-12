@@ -1,2 +1,8 @@
 .idea
 *.go
+
+nimcache/
+rnimcache/
+dnimcache
+
+testresults/

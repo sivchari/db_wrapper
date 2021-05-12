@@ -19,6 +19,10 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 /* Start of preamble from import "C" comments.  */
 
 
+#line 18 "sql.go"
+ #include <stdlib.h>
+
+#line 1 "cgo-generated-wrapper"
 
 
 /* End of preamble from import "C" comments.  */
@@ -134,7 +138,11 @@ extern char** GetTypes(GoUintptr uptr);
 
 // GetCount get count of query result
 //nolint:govet, golint
-extern int GetCount(GoUintptr uptr);
+extern int GetRowsCount(GoUintptr uptr);
+
+// GetCount get count of query result
+//nolint:govet, golint
+extern int GetColumnCount(GoUintptr uptr);
 
 // QueryExec executes query
 extern GoUintptr QueryExec(GoUintptr u, char* cQuery);

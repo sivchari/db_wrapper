@@ -1,5 +1,5 @@
-use database;
+-- use database;
 
-SET NAMES utf8mb4;
+-- SET NAMES utf8mb4;
 
-INSERT INTO `sample` (`id`, `age`, `ja_name`, `en_name`) VALUES (1, 10, "にむ", "Nim");
+-- INSERT INTO `sample` (`id`, `age`, `name`) VALUES (1, 10, "Nim");
