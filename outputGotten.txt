@@ -1,6 +1,0 @@
-/Users/sivchari/workspace/database/src/database/database.nim
-megatest:processing: [0] tests/database/tdatabase.nim
-0
-1
-2
-3

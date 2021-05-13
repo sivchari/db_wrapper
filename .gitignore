@@ -6,3 +6,6 @@ rnimcache/
 dnimcache
 
 testresults/
+
+outputExpected.txt
+outputGotten.txt

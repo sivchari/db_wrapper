@@ -1,1 +1,0 @@
-megatest:processing: [0] tests/database/tdatabase.nim
