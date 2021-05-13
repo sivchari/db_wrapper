@@ -1,4 +1,4 @@
-import cstrutils, macros, os, strutils, strformat
+import macros, os, strutils, strformat
 
 type
   DBConnection = distinct pointer
@@ -66,7 +66,6 @@ proc stmtFormat(args: varargs[string, `$`]): string =
       inc(count)
 
 proc getPath():string =
-  echo currentSourcePath()
   result = currentSourcePath() / "../../sql.so"
 
 proc getRowsCount(uptr:QueryRows):int {.cdecl, dynlib: getPath(), importc: "GetRowsCount".}
@@ -173,14 +172,15 @@ proc commit*(uptr: Transaction):bool {.cdecl, dynlib: getPath(), importc: "Commi
 proc rollback*(uptr: Transaction):bool {.cdecl, dynlib: getPath(), importc: "Rollback".}
 
 macro transaction*(db: DBConnection, content: varargs[untyped]): untyped =
-  var bodyStr = content.repr.replace("db", "tx")
+  var bodyStr = content.repr.replace(fmt"{db}.", "tx.")
+  bodyStr.removePrefix
   bodyStr = bodyStr.indent(2)
   bodyStr = fmt"""
 block:
-  let tx = db.beginTransaction
+  let tx = {db}.beginTransaction
   if isNil pointer(tx): echo "failed to begin transaction"
   try:
-    {bodyStr}
+{bodyStr}
     if not tx.commit: echo "failed to commit"
   except:
     echo getCurrentExceptionMsg()
