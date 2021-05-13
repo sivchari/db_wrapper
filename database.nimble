@@ -5,8 +5,10 @@ author        = "sivchari"
 description   = "this libraly able to use database/sql of Go"
 license       = "MIT"
 srcDir        = "src"
+skipDir       = @["database-resource", "db", "docker", "examples", "tests", "testresults"]
+skipFiles     = @["Makefile", "docker-compose.yml"]
 
 
 # Dependencies
 
-requires "nim >= 1.5.1"
+requires "nim >= 1.4.6"

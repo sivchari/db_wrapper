@@ -1,5 +1,13 @@
 import macros, os, strutils, strformat
 
+# apple silicon or Intel
+when defined(amd64):
+  const
+    lib = "sql_amd64.so"
+when defined(arm64):
+  const
+    lib = "sql_arm64.so"
+
 type
   DBConnection = distinct pointer
   QueryRows = pointer
@@ -66,7 +74,7 @@ proc stmtFormat(args: varargs[string, `$`]): string =
       inc(count)
 
 proc getPath():string =
-  result = currentSourcePath() / "../../sql.so"
+  result = currentSourcePath() / ".." / lib
 
 proc getRowsCount(uptr:QueryRows):int {.cdecl, dynlib: getPath(), importc: "GetRowsCount".}
 

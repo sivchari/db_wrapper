@@ -9,3 +9,5 @@ testresults/
 
 outputExpected.txt
 outputGotten.txt
+
+!database-resource/
