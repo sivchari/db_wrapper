@@ -48,7 +48,7 @@ commands:
     steps:
       - run:
           name: run_golangci-lint
-          command: ./bin/golangci-lint run  --disable-all --enable=goimports --enable=golint  --enable=goimports --enable=errcheck
+          command: ./bin/golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
 
 jobs:
   build:
