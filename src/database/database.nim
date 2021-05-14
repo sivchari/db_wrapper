@@ -1,12 +1,12 @@
 import macros, os, strutils, strformat
 
 # apple silicon or Intel
-when defined(unix):
+when defined(linux):
   when defined(macosx):
     when defined(amd64):
       const
         lib = "sql_amd64.so"
-    when defined(arm64):
+    when defined(arm):
       const
         lib = "sql_arm64.so"
   else:
