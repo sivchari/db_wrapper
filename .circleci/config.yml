@@ -5,8 +5,6 @@ executors:
     parameters:
       go-version:
         type: string
-      golangci-lint-version:
-        type: string
     docker:
       - image: circleci/golang:<<parameters.go-version>>
         environment:
@@ -41,6 +39,9 @@ commands:
           command: go test -v ./...
 
   install_golangci-lint:
+    golangci-lint-version:
+      type: string
+      default: "1.15.0"
     steps:
       - run:
           name: install golangci-lint
@@ -57,8 +58,6 @@ jobs:
     executor:
       name: go
       go-version: "1.16.0"
-      golangci-lint-version: "1.15.0"
-
     steps:
       - checkout
       - restore_module
