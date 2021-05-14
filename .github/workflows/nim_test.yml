@@ -1,0 +1,96 @@
+name: nim_test
+
+on:
+  pull_request:
+    paths-ignore:
+      - '*.md'
+
+jobs:
+  skip:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "skip job"
+
+  before:
+    runs-on: ubuntu-latest
+    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - run: echo "no skip ci"
+
+  test:
+    runs-on: ${{ matrix.os }}
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: database
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: Password!
+          TZ: Asia/Tokyo
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: database
+          MYSQL_USER: user
+          MYSQL_PASSWORD: Password!
+          TZ: Asia/Tokyo
+        ports:
+          - 3306:3306
+        options: --health-cmd "mysqladmin ping -h localhost" --health-interval 20s --health-timeout 10s --health-retries 10
+
+    needs: before
+
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          # can not run in macOS and Windows
+          # - windows-latest
+          # - macOS-latest
+        nim-version:
+          - 1.2.0
+          - 1.4.0
+          - stable
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache choosenim
+        id: cache-choosenim
+        uses: actions/cache@v1
+        with:
+          path: ~/.choosenim
+          key: ${{ runner.os }}-choosenim-${{ matrix.nim-version }}
+
+      - name: cache nimble
+        id: cache-nimble
+        uses: actions/cache@v1
+        with:
+          path: ~/.nimble
+          key: ${{ runner.os }}-nimble-${{ matrix.nim-version }}
+
+      - uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: ${{ matrix.nim-version }}
+
+      - name: build
+        run: nimble build -Y
+
+      - name: test
+        run: nimble test -Y
+
+      - name: check
+        run: nimble check
+
+      - name: run testament mysql
+        run: testament r tests/database/tmysql.nim
+
+      - name: run testament postgres
+        run: testament r tests/database/tpostgres.nim
+
+      - name: run testament sqlite
+        run: testament r tests/database/tsqlite3.nim

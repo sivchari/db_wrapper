@@ -1,12 +1,20 @@
 import macros, os, strutils, strformat
 
 # apple silicon or Intel
-when defined(amd64):
+when defined(unix):
+  when defined(macosx):
+    when defined(amd64):
+      const
+        lib = "sql_amd64.so"
+    when defined(arm64):
+      const
+        lib = "sql_arm64.so"
+  else:
+    const
+      lib =  "sql_linux_amd64.so"
+when defined(windows):
   const
-    lib = "sql_amd64.so"
-when defined(arm64):
-  const
-    lib = "sql_arm64.so"
+    lib = "sql_windows_amd64.dll"
 
 type
   DBConnection = distinct pointer
