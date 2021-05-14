@@ -39,13 +39,10 @@ commands:
           command: go test -v ./...
 
   install_golangci-lint:
-    golangci-lint-version:
-      type: string
-      default: "1.15.0"
     steps:
       - run:
           name: install golangci-lint
-          command: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v<< parameters.golangci-lint-version >>
+          command: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.15.0
 
   run_golangci-lint:
     steps:
