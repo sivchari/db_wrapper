@@ -9,7 +9,7 @@ backend       = "c"
 bin           = @["database/database"]
 binDir        = "src/bin"
 skipDirs      = @["database-resource", "db", "docker", "examples", "tests", "testresults"]
-skipFiles     = @["Makefile", "docker-compose.yml"]
+skipFiles     = @["README.md", "docker-compose.yml"]
 
 
 # Dependencies

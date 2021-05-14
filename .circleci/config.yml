@@ -65,6 +65,5 @@ jobs:
       - vendoring
       - save_module
       - test
-      - install_golint
-      - install_reviewdog
-      - run_reviewdog
+      - install_golangci-lint
+      - run_golangci-lint
