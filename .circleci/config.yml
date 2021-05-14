@@ -51,4 +51,4 @@ jobs:
       - save_module
       - test
       - run: go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-      - run: golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
+      - run: golangci-lint run --disable-all --enable=goimports --enable=golint
