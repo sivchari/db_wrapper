@@ -14,14 +14,14 @@ commands:
   restore_module:
     steps:
       - restore_cache:
-          name: Restore go module cahce
+          name: restore go module cahce
           keys:
             - mod-{{ checksum "go.sum" }}
 
   save_module:
     steps:
       - save_cache:
-          name: Save go module cache
+          name: save go module cache
           key: mod-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
@@ -29,14 +29,18 @@ commands:
   vendoring:
     steps:
       - run:
-          name: Vendoring
+          name: vendoring
           command: go mod download
 
-  golangci-lint:
-    docker:
-      - image: golangci/golangci-lint:v1.37-alpine
+  install-golangci-lint:
     steps:
-      - run: golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
+      - run:
+          name: install golangci-lint
+          command: bash <(curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh) -b ~/.bin v1.38.0
+
+  golangci-lint:
+    steps:
+      - run: PATH=$HOME/.bin:$PATH GOGC=100 golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
   
   test:
     steps:
@@ -54,5 +58,6 @@ jobs:
       - restore_module
       - vendoring
       - save_module
+      - install-golangci-lint
       - golangci-lint
       - test
