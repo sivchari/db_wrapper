@@ -1,6 +1,6 @@
 import ../src/database/database
 
-let db = open(MySQL, "database", "user", "Password!", "mysql", "3306", 10)
+let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 10)
 echo db.ping
 
 echo "insert"

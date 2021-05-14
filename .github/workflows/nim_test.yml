@@ -1,6 +1,9 @@
 name: nim_test
 
 on:
+  push:
+    paths-ignore:
+      - '*.md'
   pull_request:
     paths-ignore:
       - '*.md'
@@ -72,9 +75,6 @@ jobs:
       - uses: jiro4989/setup-nim-action@v1
         with:
           nim-version: ${{ matrix.nim-version }}
-
-      - name: build
-        run: nimble build -Y
 
       - name: test
         run: nimble test -Y
