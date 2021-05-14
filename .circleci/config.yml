@@ -32,26 +32,20 @@ commands:
           name: Vendoring
           command: go mod download
 
+  golangci-lint:
+    docker:
+      - image: golangci/golangci-lint:v1.37-alpine
+    steps:
+      - run: golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
+  
   test:
     steps:
       - run:
           name: go test
           command: go test -v ./...
 
-  install_golangci-lint:
-    steps:
-      - run:
-          name: install golangci-lint
-          command: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.15.0
-
-  run_golangci-lint:
-    steps:
-      - run:
-          name: run_golangci-lint
-          command: ./bin/golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
-
 jobs:
-  build:
+  build-lint-test:
     executor:
       name: go
       go-version: "1.16.0"
@@ -60,6 +54,5 @@ jobs:
       - restore_module
       - vendoring
       - save_module
+      - golangci-lint
       - test
-      - install_golangci-lint
-      - run_golangci-lint
