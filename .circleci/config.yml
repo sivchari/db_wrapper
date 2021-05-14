@@ -40,7 +40,9 @@ commands:
 
   golangci-lint:
     steps:
-      - run: PATH=$HOME/.bin:$PATH GOGC=100 golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
+      - run:
+          name: run golangci-lint 
+          command: PATH=$HOME/.bin:$PATH GOGC=100 golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
   
   test:
     steps:
