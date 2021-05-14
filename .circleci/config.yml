@@ -39,15 +39,17 @@ commands:
           command: go test -v ./...
 
 jobs:
-  build-lint-test:
+  build:
     executor:
       name: go
       go-version: "1.16.0"
+
     steps:
       - checkout
       - restore_module
       - vendoring
       - save_module
+      - test
       - run: go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
       - run: golangci-lint run --disable-all --enable=goimports --enable=golint --enable=errcheck
-      - test
+      - run_reviewdog
