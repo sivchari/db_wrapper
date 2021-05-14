@@ -2,7 +2,7 @@ import unittest
 import ../../src/database/database
 
 # write tests for failures.
-let mysql = open(MySQL, "database", "user", "Password!", "mysql", "3306", 1)
+let mysql = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 1)
 echo "mysql connected!"
 
 block: # check ping
@@ -17,7 +17,7 @@ let create = """CREATE TABLE IF NOT EXISTS `database`.`sample` (
    `id`  INT(11)
   ,`age` INT(11)
   ,`name` VARCHAR(30)
-)ENGINE = InnoDB ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"""
+)"""
 discard mysql.query(create)
 
 # table driven test

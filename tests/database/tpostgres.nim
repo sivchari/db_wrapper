@@ -3,7 +3,7 @@ import ../../src/database/database
 
 # write tests for failures.
 
-let postgres = open(PostgreSQL, "database", "user", "Password!", "postgres", "5432", 1)
+let postgres = open(PostgreSQL, "database", "user", "Password!", "127.0.0.1", "5432", 1)
 echo "postgres connected!"
 
 block: # check ping

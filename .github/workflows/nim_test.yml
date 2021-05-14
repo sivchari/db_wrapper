@@ -19,7 +19,6 @@ jobs:
 
   test:
     runs-on: ${{ matrix.os }}
-
     services:
       postgres:
         image: postgres
@@ -42,9 +41,7 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd "mysqladmin ping -h localhost" --health-interval 20s --health-timeout 10s --health-retries 10
-
     needs: before
-
     strategy:
       matrix:
         os:
@@ -56,7 +53,6 @@ jobs:
           - 1.2.0
           - 1.4.0
           - stable
-
     steps:
       - uses: actions/checkout@v2
       - name: cache choosenim

@@ -14,14 +14,14 @@ commands:
   restore_module:
     steps:
       - restore_cache:
-          name: Restore go module cahce
+          name: restore go module cahce
           keys:
             - mod-{{ checksum "go.sum" }}
 
   save_module:
     steps:
       - save_cache:
-          name: Save go module cache
+          name: save go module cache
           key: mod-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
@@ -29,7 +29,7 @@ commands:
   vendoring:
     steps:
       - run:
-          name: Vendoring
+          name: vendoring
           command: go mod download
 
   test:
@@ -38,28 +38,17 @@ commands:
           name: go test
           command: go test -v ./...
 
-  install_golangci-lint:
-    steps:
-      - run:
-          name: install golangci-lint
-          command: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.15.0
-
-  run_golangci-lint:
-    steps:
-      - run:
-          name: run_golangci-lint
-          command: ./bin/golangci-lint run  --disable-all --enable=goimports --enable=golint  --enable=goimports --enable=errcheck
-
 jobs:
   build:
     executor:
       name: go
       go-version: "1.16.0"
+
     steps:
       - checkout
       - restore_module
       - vendoring
       - save_module
       - test
-      - install_golangci-lint
-      - run_golangci-lint
+      - run: go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+      - run: golangci-lint run --disable-all --enable=goimports --enable=golint
