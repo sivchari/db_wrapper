@@ -78,7 +78,9 @@ block: # check MySQL query
   ]
 
   for tt in items(tests): # run test
-    let result = sqlite.query(tt.query, tt.args)
+    var result: QueryRows
+    if tt.name == "SELECT": result = sqlite.prepare(tt.query).query(tt.args)
+    else: result = sqlite.prepare(tt.query).exec(tt.args)
     case tt.name
     of "INSERT":
       if isNil result: quit("FAILURE")
@@ -140,14 +142,17 @@ block: # check MySQL prepare exec
   ]
 
   for tt in items(tests): # run test
-    let result = sqlite.prepare(tt.query).exec(tt.args)
+    var result: QueryRows
+    if tt.name == "SELECT": result = sqlite.prepare(tt.query).query(tt.args)
+    else: result = sqlite.prepare(tt.query).exec(tt.args)
     case tt.name
     of "INSERT":
       if isNil result: quit("FAILURE")
     of "SELECT":
-      # Currently, the prepare method is not able to retrieve columns and rows, types.
-      # If you want to get columns, please use the query method. 
-      continue
+      check result[0] == tt.want
+      check result.all == @[result[0]]
+      check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+      check result.columnNames == ["id", "age", "name", "time"]
     of "UPDATE":
       if isNil result: quit("FAILURE")
     of "DELETE":
@@ -245,20 +250,18 @@ block: # check Tx MySQL prepare exec
     let result = sqlite.prepare(t1.query).exec(t1.args)
     if isNil result: quit("FAILURE")
 
-  # Currently, the prepare method is not able to retrieve columns and rows, types.
-  # If you want to get columns, please use the query method. 
-    ## let t2: struct = struct(
-    ##   name: "SELECT",
-    ##   query: "SELECT * FROM sample WHERE id = ?",
-    ##   args: @[$1],
-    ##   want: @["1", "10", "New Nim", "]
-    ## )
-    ## sqlite.transaction:
-    ##   let result = sqlite.query(t2.query, t2.args)
-    ##   check result[0] == t2.want
-    ##   check result.all == @[result[0]]
-    ##   check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
-    ##   check result.columnNames == ["id", "age", "name", "time"]
+  let t2: struct = struct(
+    name: "SELECT",
+    query: "SELECT * FROM sample WHERE id = ?",
+    args: @[$1],
+    want: @["1", "10", "New Nim", ""]
+  )
+  sqlite.transaction:
+    let result = sqlite.prepare(t2.query).query(t2.args)
+    check result[0] == t2.want
+    check result.all == @[result[0]]
+    check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
   
   let t3: struct = struct(
     name: "DELETE",
@@ -280,20 +283,18 @@ block: # check Tx MySQL prepare exec
     let result = sqlite.prepare(t4.query).exec(t4.args)
     if isNil result: quit("FAILURE")
 
-  # Currently, the prepare method is not able to retrieve columns and rows, types.
-  # If you want to get columns, please use the query method. 
-    ## let t5: struct = struct(
-    ##   name: "SELECT",
-    ##   query: "SELECT * FROM sample WHERE id = ?",
-    ##   args: @[$1],
-    ##   want: @["1", "10", "", ""]
-    ## )
-    ## sqlite.transaction:
-    ##   let result = sqlite.prepare(t5.query).exec(t5.args)
-    ##   check result[0] == t4.want
-    ##   check result.all == @[result[0]]
-    ##   check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
-    ##   check result.columnNames == ["id", "age", "name", "time"]
+  let t5: struct = struct(
+    name: "SELECT",
+    query: "SELECT * FROM sample WHERE id = ?",
+    args: @[$1],
+    want: @["1", "10", "", ""]
+  )
+  sqlite.transaction:
+    let result = sqlite.prepare(t5.query).query(t5.args)
+    check result[0] == t5.want
+    check result.all == @[result[0]]
+    check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
 
   let t6: struct = struct(
     name: "UPDATE",

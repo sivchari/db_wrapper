@@ -19,7 +19,7 @@ when defined(windows):
 type
   DBConnection* = distinct pointer
   QueryRows* = pointer
-  Stmt* = pointer
+  Stmt* = distinct pointer
   Result* = pointer
   Rows* = cstringArray
   Columns* = cstringArray
@@ -119,6 +119,8 @@ proc queryExec(uptr: DBConnection, query: cstring):QueryRows {.cdecl, dynlib: ge
 
 proc queryExec(uptr: Transaction, query: cstring):QueryRows {.cdecl, dynlib: getPath(), importc: "TxQueryExec".}
 
+proc queryExec(uptr: Stmt, args: cstring):QueryRows {.cdecl, dynlib: getPath(), importc: "StmtQuery".}
+
 proc query*(uptr: DBConnection, query: string, args: varargs[string, `$`]):QueryRows =
   let d = uptr.getDriverName
   var q: string
@@ -133,6 +135,10 @@ proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryR
   if d == "mysql": q = dbFormat(query, args)
   elif d == "postgres": q = pqDBFormat(query, args)
   elif d == "sqlite3": q = dbFormat(query, args)
+  uptr.queryExec(q)
+
+proc query*(uptr: Stmt, args: varargs[string, `$`]):QueryRows =
+  let q = stmtFormat(args)
   uptr.queryExec(q)
 
 proc prepare*(uptr: DBConnection, query: cstring):Stmt {.cdecl, dynlib: getPath(), importc: "StmtPrepare".}
