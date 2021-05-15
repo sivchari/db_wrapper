@@ -1810,6 +1810,11 @@ func GetRow(uptr uintptr, i int) crow {
 			cArray[idx] = C.CString(vv)
 		case string:
 			cArray[idx] = C.CString(v)
+		case time.Time:
+			timeFormat := "2006-01-02 15:04:05"
+			cArray[idx] = C.CString(v.Format(timeFormat))
+		case nil:
+			cArray[idx] = C.CString("")
 		default:
 			cArray[idx] = C.CString(v.(string))
 		}

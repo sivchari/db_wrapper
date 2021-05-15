@@ -1,4 +1,4 @@
-import ../src/database/database
+import ../src/database
 
 let db = open(SQLite3, "sample.sqlite3")
 echo db.ping

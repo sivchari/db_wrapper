@@ -1,5 +1,5 @@
 import unittest
-import ../../src/database/database
+import ../../src/database
 
 # write tests for failures.
 let mysql = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 1)
@@ -14,9 +14,10 @@ let drop = "DROP TABLE IF EXISTS sample"
 discard mysql.query(drop)
 
 let create = """CREATE TABLE IF NOT EXISTS `database`.`sample` (
-   `id`  INT(11)
-  ,`age` INT(11)
+   `id`  INT
+  ,`age` INT
   ,`name` VARCHAR(30)
+  ,`time` TIMESTAMP NULL DEFAULT NULL
 )"""
 discard mysql.query(create)
 
@@ -33,15 +34,33 @@ block: # check MySQL query
   let tests: seq[struct] = @[
      struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
-      args: @[$1, $10, "New Nim"],
+      query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
+      args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
       query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
-      want: @["1", "10", "New Nim"]
+      want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
+    ),
+    struct(
+      name: "DELETE",
+      query: "DELETE FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @[]
+    ),
+    struct(
+      name: "INSERT",
+      query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+      args: @[$1, $10],
+      want: @[]
+    ),
+    struct(
+      name: "SELECT",
+      query: "SELECT * FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
@@ -65,8 +84,8 @@ block: # check MySQL query
     of "SELECT":
       check result[0] == tt.want
       check result.all == @[result[0]]
-      check result.columnTypes == ["INT", "INT", "VARCHAR"]
-      check result.columnNames == ["id", "age", "name"]
+      check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+      check result.columnNames == ["id", "age", "name", "time"]
     of "UPDATE":
       if isNil result: quit("FAILURE")
     of "DELETE":
@@ -77,15 +96,33 @@ block: # check MySQL prepare exec
   let tests: seq[struct] = @[
      struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
-      args: @[$1, $10, "New Nim"],
+      query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
+      args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
       query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
-      want: @["1", "10", "New Nim"]
+      want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
+    ),
+    struct(
+      name: "DELETE",
+      query: "DELETE FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @[]
+    ),
+    struct(
+      name: "INSERT",
+      query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+      args: @[$1, $10],
+      want: @[]
+    ),
+    struct(
+      name: "SELECT",
+      query: "SELECT * FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
@@ -122,8 +159,8 @@ block: # check MySQL prepare exec
 block: # check Tx MySQL query
   let t1: struct = struct(
     name: "INSERT",
-    query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
-    args: @[$1, $10, "New Nim"],
+    query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
+    args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
     want: @[]
   )
   mysql.transaction:
@@ -134,19 +171,19 @@ block: # check Tx MySQL query
     name: "SELECT",
     query: "SELECT * FROM sample WHERE id = ?",
     args: @[$1],
-    want: @["1", "10", "New Nim"]
+    want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
   )
   mysql.transaction:
     let result = mysql.query(t2.query, t2.args)
     check result[0] == t2.want
     check result.all == @[result[0]]
-    check result.columnTypes == ["INT", "INT", "VARCHAR"]
-    check result.columnNames == ["id", "age", "name"]
-
+    check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
+  
   let t3: struct = struct(
-    name: "UPDATE",
-    query: "UPDATE sample SET name = ? WHERE id = ?",
-    args: @["Change Nim", $1],
+    name: "DELETE",
+    query: "DELETE FROM sample WHERE id = ?",
+    args: @[$1],
     want: @[]
   )
   mysql.transaction:
@@ -154,13 +191,46 @@ block: # check Tx MySQL query
     if isNil result: quit("FAILURE")
 
   let t4: struct = struct(
+    name: "INSERT",
+    query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+    args: @[$1, $10],
+    want: @[]
+  )
+  mysql.transaction:
+    let result = mysql.query(t4.query, t4.args)
+    if isNil result: quit("FAILURE")
+
+  let t5: struct = struct(
+    name: "SELECT",
+    query: "SELECT * FROM sample WHERE id = ?",
+    args: @[$1],
+    want: @["1", "10", "", ""]
+  )
+  mysql.transaction:
+    let result = mysql.query(t5.query, t5.args)
+    check result[0] == t5.want
+    check result.all == @[result[0]]
+    check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
+
+  let t6: struct = struct(
+    name: "UPDATE",
+    query: "UPDATE sample SET name = ? WHERE id = ?",
+    args: @["Change Nim", $1],
+    want: @[]
+  )
+  mysql.transaction:
+    let result = mysql.query(t6.query, t6.args)
+    if isNil result: quit("FAILURE")
+
+  let t7: struct = struct(
     name: "DELETE",
     query: "DELETE FROM sample WHERE id = ?",
     args: @[$1],
     want: @[]
   )
   mysql.transaction:
-    let result = mysql.query(t4.query, t4.args)
+    let result = mysql.query(t7.query, t7.args)
     if isNil result: quit("FAILURE")
 
 block: # check Tx MySQL prepare exec
@@ -180,19 +250,19 @@ block: # check Tx MySQL prepare exec
     ##   name: "SELECT",
     ##   query: "SELECT * FROM sample WHERE id = ?",
     ##   args: @[$1],
-    ##   want: @["1", "10", "New Nim"]
+    ##   want: @["1", "10", "New Nim", "]
     ## )
     ## mysql.transaction:
-    ##   let result = mysql.prepare(t2.query).exec(t2.args)
+    ##   let result = mysql.query(t2.query, t2.args)
     ##   check result[0] == t2.want
     ##   check result.all == @[result[0]]
-    ##   check result.columnTypes == ["INT", "INT", "VARCHAR"]
-    ##   check result.columnNames == ["id", "age", "name"]
-
+    ##   check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    ##   check result.columnNames == ["id", "age", "name", "time"]
+  
   let t3: struct = struct(
-    name: "UPDATE",
-    query: "UPDATE sample SET name = ? WHERE id = ?",
-    args: @["Change Nim", $1],
+    name: "DELETE",
+    query: "DELETE FROM sample WHERE id = ?",
+    args: @[$1],
     want: @[]
   )
   mysql.transaction:
@@ -200,13 +270,48 @@ block: # check Tx MySQL prepare exec
     if isNil result: quit("FAILURE")
 
   let t4: struct = struct(
+    name: "INSERT",
+    query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+    args: @[$1, $10],
+    want: @[]
+  )
+  mysql.transaction:
+    let result = mysql.prepare(t4.query).exec(t4.args)
+    if isNil result: quit("FAILURE")
+
+  # Currently, the prepare method is not able to retrieve columns and rows, types.
+  # If you want to get columns, please use the query method. 
+    ## let t5: struct = struct(
+    ##   name: "SELECT",
+    ##   query: "SELECT * FROM sample WHERE id = ?",
+    ##   args: @[$1],
+    ##   want: @["1", "10", "", ""]
+    ## )
+    ## mysql.transaction:
+    ##   let result = mysql.prepare(t5.query).exec(t5.args)
+    ##   check result[0] == t4.want
+    ##   check result.all == @[result[0]]
+    ##   check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    ##   check result.columnNames == ["id", "age", "name", "time"]
+
+  let t6: struct = struct(
+    name: "UPDATE",
+    query: "UPDATE sample SET name = ? WHERE id = ?",
+    args: @["Change Nim", $1],
+    want: @[]
+  )
+  mysql.transaction:
+    let result = mysql.prepare(t6.query).exec(t6.args)
+    if isNil result: quit("FAILURE")
+
+  let t7: struct = struct(
     name: "DELETE",
     query: "DELETE FROM sample WHERE id = ?",
     args: @[$1],
     want: @[]
   )
   mysql.transaction:
-    let result = mysql.prepare(t4.query).exec(t4.args)
+    let result = mysql.prepare(t7.query).exec(t7.args)
     if isNil result: quit("FAILURE")
 
 block: # check close

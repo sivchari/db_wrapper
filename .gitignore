@@ -11,3 +11,6 @@ outputExpected.txt
 outputGotten.txt
 
 !database-resource/
+
+golang.org
+github.com
