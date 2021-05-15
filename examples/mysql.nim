@@ -1,4 +1,4 @@
-import ../src/database/database
+import ../src/database
 
 let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 10)
 echo db.ping

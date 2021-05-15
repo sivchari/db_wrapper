@@ -1,5 +1,5 @@
 import unittest
-import ../../src/database/database
+import ../../src/database
 
 # write tests for failures.
 
@@ -14,10 +14,11 @@ echo "Ping!"
 let drop = "DROP TABLE IF EXISTS sample"
 discard sqlite.query(drop)
 
-let create = """CREATE TABLE IF NOT EXISTS sample (
-     id INT
-    ,age INT
-    ,name VARCHAR
+let create = """CREATE TABLE IF NOT EXISTS `sample` (
+   `id`  INT
+  ,`age` INT
+  ,`name` VARCHAR
+  ,`time` TIMESTAMP NULL DEFAULT NULL
 )"""
 discard sqlite.query(create)
 
@@ -30,19 +31,37 @@ type struct = object
   args: seq[string]
   want: seq[string]
 
-block: # check SQLite query
+block: # check MySQL query
   let tests: seq[struct] = @[
      struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
-      args: @[$1, $10, "New Nim"],
+      query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
+      args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
       query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
-      want: @["1", "10", "New Nim"]
+      want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
+    ),
+    struct(
+      name: "DELETE",
+      query: "DELETE FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @[]
+    ),
+    struct(
+      name: "INSERT",
+      query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+      args: @[$1, $10],
+      want: @[]
+    ),
+    struct(
+      name: "SELECT",
+      query: "SELECT * FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
@@ -55,10 +74,10 @@ block: # check SQLite query
       query: "DELETE FROM sample WHERE id = ?",
       args: @[$1],
       want: @[]
-    ),
+    )
   ]
 
-  for i, tt in tests: # run test
+  for tt in items(tests): # run test
     let result = sqlite.query(tt.query, tt.args)
     case tt.name
     of "INSERT":
@@ -66,27 +85,45 @@ block: # check SQLite query
     of "SELECT":
       check result[0] == tt.want
       check result.all == @[result[0]]
-      check result.columnTypes == ["INT", "INT", "VARCHAR"]
-      check result.columnNames == ["id", "age", "name"]
+      check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+      check result.columnNames == ["id", "age", "name", "time"]
     of "UPDATE":
       if isNil result: quit("FAILURE")
     of "DELETE":
       if isNil result: quit("FAILURE")
     else: raise newException(Exception, "Unknow command")
 
-block: # check SQLite prepare exec
+block: # check MySQL prepare exec
   let tests: seq[struct] = @[
      struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
-      args: @[$1, $10, "New Nim"],
+      query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
+      args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
       query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
-      want: @["1", "10", "New Nim"]
+      want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
+    ),
+    struct(
+      name: "DELETE",
+      query: "DELETE FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @[]
+    ),
+    struct(
+      name: "INSERT",
+      query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+      args: @[$1, $10],
+      want: @[]
+    ),
+    struct(
+      name: "SELECT",
+      query: "SELECT * FROM sample WHERE id = ?",
+      args: @[$1],
+      want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
@@ -120,11 +157,11 @@ block: # check SQLite prepare exec
 # In the future, we will also write tests for manual transactions,
 # but since manual transactions are used in macros, we are only testing macros now
 
-block: # check Tx SQLite query
+block: # check Tx MySQL query
   let t1: struct = struct(
     name: "INSERT",
-    query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
-    args: @[$1, $10, "New Nim"],
+    query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
+    args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
     want: @[]
   )
   sqlite.transaction:
@@ -135,19 +172,19 @@ block: # check Tx SQLite query
     name: "SELECT",
     query: "SELECT * FROM sample WHERE id = ?",
     args: @[$1],
-    want: @["1", "10", "New Nim"]
+    want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
   )
   sqlite.transaction:
-    let result =  sqlite.query(t2.query, t2.args)
+    let result = sqlite.query(t2.query, t2.args)
     check result[0] == t2.want
     check result.all == @[result[0]]
-    check result.columnTypes == ["INT", "INT", "VARCHAR"]
-    check result.columnNames == ["id", "age", "name"]
-
+    check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
+  
   let t3: struct = struct(
-    name: "UPDATE",
-    query: "UPDATE sample SET name = ? WHERE id = ?",
-    args: @["Change Nim", $1],
+    name: "DELETE",
+    query: "DELETE FROM sample WHERE id = ?",
+    args: @[$1],
     want: @[]
   )
   sqlite.transaction:
@@ -155,16 +192,49 @@ block: # check Tx SQLite query
     if isNil result: quit("FAILURE")
 
   let t4: struct = struct(
-    name: "DELETE",
-    query: "DELETE FROM sample WHERE id = ?",
-    args: @[$1],
+    name: "INSERT",
+    query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+    args: @[$1, $10],
     want: @[]
   )
   sqlite.transaction:
     let result = sqlite.query(t4.query, t4.args)
     if isNil result: quit("FAILURE")
 
-block: # check Tx SQLite prepare exec
+  let t5: struct = struct(
+    name: "SELECT",
+    query: "SELECT * FROM sample WHERE id = ?",
+    args: @[$1],
+    want: @["1", "10", "", ""]
+  )
+  sqlite.transaction:
+    let result = sqlite.query(t5.query, t5.args)
+    check result[0] == t5.want
+    check result.all == @[result[0]]
+    check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
+
+  let t6: struct = struct(
+    name: "UPDATE",
+    query: "UPDATE sample SET name = ? WHERE id = ?",
+    args: @["Change Nim", $1],
+    want: @[]
+  )
+  sqlite.transaction:
+    let result = sqlite.query(t6.query, t6.args)
+    if isNil result: quit("FAILURE")
+
+  let t7: struct = struct(
+    name: "DELETE",
+    query: "DELETE FROM sample WHERE id = ?",
+    args: @[$1],
+    want: @[]
+  )
+  sqlite.transaction:
+    let result = sqlite.query(t7.query, t7.args)
+    if isNil result: quit("FAILURE")
+
+block: # check Tx MySQL prepare exec
   let t1: struct = struct(
     name: "INSERT",
     query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
@@ -181,19 +251,19 @@ block: # check Tx SQLite prepare exec
     ##   name: "SELECT",
     ##   query: "SELECT * FROM sample WHERE id = ?",
     ##   args: @[$1],
-    ##   want: @["1", "10", "New Nim"]
+    ##   want: @["1", "10", "New Nim", "]
     ## )
     ## sqlite.transaction:
-    ##   let result = sqlite.prepare(t2.query).exec(t2.args)
+    ##   let result = sqlite.query(t2.query, t2.args)
     ##   check result[0] == t2.want
     ##   check result.all == @[result[0]]
-    ##   check result.columnTypes == ["INT", "INT", "VARCHAR"]
-    ##   check result.columnNames == ["id", "age", "name"]
-
+    ##   check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    ##   check result.columnNames == ["id", "age", "name", "time"]
+  
   let t3: struct = struct(
-    name: "UPDATE",
-    query: "UPDATE sample SET name = ? WHERE id = ?",
-    args: @["Change Nim", $1],
+    name: "DELETE",
+    query: "DELETE FROM sample WHERE id = ?",
+    args: @[$1],
     want: @[]
   )
   sqlite.transaction:
@@ -201,13 +271,48 @@ block: # check Tx SQLite prepare exec
     if isNil result: quit("FAILURE")
 
   let t4: struct = struct(
+    name: "INSERT",
+    query: "INSERT INTO sample(id, age) VALUES(?, ?)",
+    args: @[$1, $10],
+    want: @[]
+  )
+  sqlite.transaction:
+    let result = sqlite.prepare(t4.query).exec(t4.args)
+    if isNil result: quit("FAILURE")
+
+  # Currently, the prepare method is not able to retrieve columns and rows, types.
+  # If you want to get columns, please use the query method. 
+    ## let t5: struct = struct(
+    ##   name: "SELECT",
+    ##   query: "SELECT * FROM sample WHERE id = ?",
+    ##   args: @[$1],
+    ##   want: @["1", "10", "", ""]
+    ## )
+    ## sqlite.transaction:
+    ##   let result = sqlite.prepare(t5.query).exec(t5.args)
+    ##   check result[0] == t4.want
+    ##   check result.all == @[result[0]]
+    ##   check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
+    ##   check result.columnNames == ["id", "age", "name", "time"]
+
+  let t6: struct = struct(
+    name: "UPDATE",
+    query: "UPDATE sample SET name = ? WHERE id = ?",
+    args: @["Change Nim", $1],
+    want: @[]
+  )
+  sqlite.transaction:
+    let result = sqlite.prepare(t6.query).exec(t6.args)
+    if isNil result: quit("FAILURE")
+
+  let t7: struct = struct(
     name: "DELETE",
     query: "DELETE FROM sample WHERE id = ?",
     args: @[$1],
     want: @[]
   )
   sqlite.transaction:
-    let result = sqlite.prepare(t4.query).exec(t4.args)
+    let result = sqlite.prepare(t7.query).exec(t7.args)
     if isNil result: quit("FAILURE")
 
 block: # check close

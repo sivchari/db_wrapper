@@ -151,18 +151,19 @@ GOARCH=amd64 CGO_ENABLED=1 go build -buildmode=c-shared -o sql_amd64.so *.go
 ### Linux
 ```shell
 docker-compose up --build -d linux-compile
-docker-compose exec linux-compile
+docker-compose exec linux-compile bash
+cd src/database-resource/
 go get golang.org/dl/go1.16
 go1.16 download
-CGO_ENABLED=1 go1.16 build -buildmode=c-shared -o sql_linux_amd64.so *.go
+GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go1.16 build -buildmode=c-shared -o sql_linux_amd64.so *.go
 ```
 
 ### Windows
 ```shell
 docker-compose up --build -d windows-compile
-docker-compose exec windows-compile
+docker-compose exec windows-compile bash
+cd src/database-resource/
 apt -y update
-apt -y install gcc-multilib
 apt -y install gcc-mingw-w64
 apt -y install binutils-mingw-w64
 GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc go build -buildmode=c-shared -o sql_windows_amd64.dll *.go

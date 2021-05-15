@@ -1,4 +1,4 @@
-import ../src/database/database
+import ../src/database
 
 let db = open(PostgreSQL, "database", "user", "Password!", "127.0.0.1", "5432", 1)
 echo db.ping

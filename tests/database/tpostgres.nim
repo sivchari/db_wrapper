@@ -1,5 +1,5 @@
 import unittest
-import ../../src/database/database
+import ../../src/database
 
 # write tests for failures.
 
@@ -17,7 +17,8 @@ discard postgres.query(drop)
 let create = """create table sample (
   id integer not null,
   age integer not null,
-  name varchar not null
+  name varchar null,
+  time timestamp null
 )"""
 discard postgres.query(create)
 
@@ -34,15 +35,33 @@ block: # check PostgreSQL query
   let tests: seq[struct] = @[
     struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name) VALUES($1, $2, $3)",
-      args: @[$1, $10, "New Nim"],
+      query: "INSERT INTO sample(id, age, name, time) VALUES($1, $2, $3, $4)",
+      args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
       query: "SELECT * FROM sample WHERE id = $1",
       args: @[$1],
-      want: @["1", "10", "New Nim"]
+      want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
+    ),
+    struct(
+      name: "DELETE",
+      query: "DELETE FROM sample WHERE id = $1",
+      args: @[$1],
+      want: @[]
+    ),
+    struct(
+      name: "INSERT",
+      query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+      args: @[$1, $10],
+      want: @[]
+    ),
+    struct(
+      name: "SELECT",
+      query: "SELECT * FROM sample WHERE id = $1",
+      args: @[$1],
+      want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
@@ -66,8 +85,8 @@ block: # check PostgreSQL query
     of "SELECT":
       check result[0] == tt.want
       check result.all == @[result[0]]
-      check result.columnTypes == ["INT4", "INT4", "VARCHAR"]
-      check result.columnNames == ["id", "age", "name"]
+      check result.columnTypes == ["INT4", "INT4", "VARCHAR", "TIMESTAMP"]
+      check result.columnNames == ["id", "age", "name", "time"]
     of "UPDATE":
       if isNil result: quit("FAILURE")
     of "DELETE":
@@ -78,15 +97,33 @@ block: # check PostgreSQL prepare exec
   let tests: seq[struct] = @[
     struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name) VALUES($1, $2, $3)",
-      args: @[$1, $10, "New Nim"],
+      query: "INSERT INTO sample(id, age, name, time) VALUES($1, $2, $3, $4)",
+      args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
       query: "SELECT * FROM sample WHERE id = $1",
       args: @[$1],
-      want: @["1", "10", "New Nim"]
+      want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
+    ),
+    struct(
+      name: "DELETE",
+      query: "DELETE FROM sample WHERE id = $1",
+      args: @[$1],
+      want: @[]
+    ),
+    struct(
+      name: "INSERT",
+      query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+      args: @[$1, $10],
+      want: @[]
+    ),
+    struct(
+      name: "SELECT",
+      query: "SELECT * FROM sample WHERE id = $1",
+      args: @[$1],
+      want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
@@ -135,19 +172,19 @@ block: # check Tx PostgreSQL query
     name: "SELECT",
     query: "SELECT * FROM sample WHERE id = $1",
     args: @[$1],
-    want: @["1", "10", "New Nim"]
+    want: @["1", "10", "New Nim", ""]
   )
   postgres.transaction:
     let result =  postgres.query(t2.query, t2.args)
     check result[0] == t2.want
     check result.all == @[result[0]]
-    check result.columnTypes == ["INT4", "INT4", "VARCHAR"]
-    check result.columnNames == ["id", "age", "name"]
-
+    check result.columnTypes == ["INT4", "INT4", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
+  
   let t3: struct = struct(
-    name: "UPDATE",
-    query: "UPDATE sample SET name = $1 WHERE id = $2",
-    args: @["Change Nim", $1],
+    name: "DELETE",
+    query: "DELETE FROM sample WHERE id = $1",
+    args: @[$1],
     want: @[]
   )
   postgres.transaction:
@@ -155,13 +192,46 @@ block: # check Tx PostgreSQL query
     if isNil result: quit("FAILURE")
   
   let t4: struct = struct(
+    name: "INSERT",
+    query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+    args: @[$1, $10],
+    want: @[]
+  )
+  postgres.transaction:
+    let result = postgres.query(t4.query, t4.args)
+    if isNil result: quit("FAILURE")
+
+  let t5: struct = struct(
+    name: "SELECT",
+    query: "SELECT * FROM sample WHERE id = $1",
+    args: @[$1],
+    want: @["1", "10", "", ""]
+  )
+  postgres.transaction:
+    let result = postgres.query(t5.query, t5.args)
+    check result[0] == t5.want
+    check result.all == @[result[0]]
+    check result.columnTypes == ["INT4", "INT4", "VARCHAR", "TIMESTAMP"]
+    check result.columnNames == ["id", "age", "name", "time"]
+
+  let t6: struct = struct(
+    name: "UPDATE",
+    query: "UPDATE sample SET name = $1 WHERE id = $2",
+    args: @["Change Nim", $1],
+    want: @[]
+  )
+  postgres.transaction:
+    let result = postgres.query(t6.query, t6.args)
+    if isNil result: quit("FAILURE")
+  
+  let t7: struct = struct(
     name: "DELETE",
     query: "DELETE FROM sample WHERE id = $1",
     args: @[$1],
     want: @[]
   )
   postgres.transaction:
-    let result = postgres.query(t4.query, t4.args)
+    let result = postgres.query(t7.query, t7.args)
     if isNil result: quit("FAILURE")
 
 block: # check Tx PostgreSQL prepare exec
@@ -181,33 +251,68 @@ block: # check Tx PostgreSQL prepare exec
     ##   name: "SELECT",
     ##   query: "SELECT * FROM sample WHERE id = $1",
     ##   args: @[$1],
-    ##   want: @["1", "10", "New Nim"]
+    ##   want: @["1", "10", "New Nim", ""]
     ## )
     ## postgres.transaction:
     ##   let result = postgres.prepare(t2.query).exec(t2.args)
     ##   check result[0] == t2.want
     ##   check result.all == @[result[0]]
-    ##   check result.columnTypes == ["INT4", "INT4", "VARCHAR"]
-    ##   check result.columnNames == ["id", "age", "name"]
-
-  let t3: struct = struct(
-    name: "UPDATE",
-    query: "UPDATE sample SET name = $1 WHERE id = $2",
-    args: @["Change Nim", $1],
-    want: @[]
-  )
-  postgres.transaction:
-    let result = postgres.prepare(t3.query).exec(t3.args)
-    if isNil result: quit("FAILURE")
+    ##   check result.columnTypes == ["INT4", "INT4", "VARCHAR", "TIMESTAMP"]
+    ##   check result.columnNames == ["id", "age", "name", "time"]
   
-  let t4: struct = struct(
+  let t3: struct = struct(
     name: "DELETE",
     query: "DELETE FROM sample WHERE id = $1",
     args: @[$1],
     want: @[]
   )
   postgres.transaction:
+    let result = postgres.query(t3.query, t3.args)
+    if isNil result: quit("FAILURE")
+  
+  let t4: struct = struct(
+    name: "INSERT",
+    query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+    args: @[$1, $10],
+    want: @[]
+  )
+  postgres.transaction:
     let result = postgres.prepare(t4.query).exec(t4.args)
+    if isNil result: quit("FAILURE")
+  
+  # Currently, the prepare method is not able to retrieve columns and rows, types.
+  # If you want to get columns, please use the query method. 
+    ## let t5: struct = struct(
+    ##   name: "SELECT",
+    ##   query: "SELECT * FROM sample WHERE id = $1",
+    ##   args: @[$1],
+    ##   want: @["1", "10", "", ""]
+    ## )
+    ## postgres.transaction:
+    ##   let result = postgres.prepare(t5.query).exec(t5.args)
+    ##   check result[0] == t5.want
+    ##   check result.all == @[result[0]]
+    ##   check result.columnTypes == ["INT4", "INT4", "VARCHAR", "TIMESTAMP"]
+    ##   check result.columnNames == ["id", "age", "name", "time"]
+
+  let t6: struct = struct(
+    name: "UPDATE",
+    query: "UPDATE sample SET name = $1 WHERE id = $2",
+    args: @["Change Nim", $1],
+    want: @[]
+  )
+  postgres.transaction:
+    let result = postgres.prepare(t6.query).exec(t6.args)
+    if isNil result: quit("FAILURE")
+  
+  let t7: struct = struct(
+    name: "DELETE",
+    query: "DELETE FROM sample WHERE id = $1",
+    args: @[$1],
+    want: @[]
+  )
+  postgres.transaction:
+    let result = postgres.prepare(t7.query).exec(t7.args)
     if isNil result: quit("FAILURE")
 
 block: # check close
