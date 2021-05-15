@@ -175,15 +175,9 @@ There is an official database library for Nim, but it does not implement connect
 However, this library (database) allows connection pooling to be set at connection time.
 This library (database) implicitly sets the same value as the connection pool as idle connection when connecting.
 
+`There is a 9 second difference in performance between db_mysql and db_mysql for 150,000 queries issued.`
+
 Here is a benchmark of the official db_mysql and 15000 queries and 150000 run with async
-
-`The reason why only the standard library calls sleep in the 150000 loop is because the standard library does not support concurrency and will execute another query before the query is completed.`
-
-Here is the error message
-
-```shell
-commands out of sync; you can't run this command now
-```
 
 ## Loop 15000
 ![MySQL 15000 Benchmark](img/mysql_loop_15000.png)
@@ -193,6 +187,14 @@ commands out of sync; you can't run this command now
 
 ### database
 > 2.4392 sec
+
+The reason why only the standard library calls sleep in the 150000 loop is because the standard library does not support concurrency and will execute another query before the query is completed.
+
+Here is the error message
+
+```shell
+commands out of sync; you can't run this command now
+```
 
 ## Loop 150000
 ![MySQL 150000 Benchmark](img/mysql_loop_150000.png)
