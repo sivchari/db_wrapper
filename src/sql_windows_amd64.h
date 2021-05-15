@@ -180,6 +180,13 @@ extern __declspec(dllexport) GoUintptr TxQueryExec(GoUintptr u, char* cQuery);
 // StmtExec executes prepare's query
 extern __declspec(dllexport) GoUintptr StmtExec(GoUintptr u, char* cArgs);
 
+// Query executes a prepared query statement with the given arguments
+// and returns the query results as a *Rows.
+//
+// Query uses context.Background internally; to specify the context, use
+// QueryContext.
+extern __declspec(dllexport) GoUintptr StmtQuery(GoUintptr u, char* cArgs);
+
 #ifdef __cplusplus
 }
 #endif

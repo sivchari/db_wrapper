@@ -1624,7 +1624,7 @@ func TestSQLCloseStmtBeforeRows(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	r, err := s.Query()
+	r, err := s.QueryContext(context.Background())
 	if err != nil {
 		s.Close()
 		t.Fatal(err)
@@ -2685,7 +2685,7 @@ func TestManyErrBadConn(t *testing.T) {
 		}
 	})
 	defer closeDB(t, db)
-	rows, err = stmt.Query()
+	rows, err = stmt.QueryContext(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2810,7 +2810,7 @@ func TestTxStmtDeadlock(t *testing.T) {
 	for i := 0; i < 1e3; i++ {
 		// Encounter any close related errors (e.g. ErrTxDone, stmt is closed)
 		// is expected due to context cancel.
-		_, err = stmt.Query(1)
+		_, err = stmt.QueryContext(context.Background(), 1)
 		if err != nil {
 			break
 		}
@@ -3076,7 +3076,7 @@ func TestErrBadConnReconnect(t *testing.T) {
 	forcePrepare(stmt2)
 
 	stmtQuery := func() error {
-		rows, err := stmt2.Query()
+		rows, err := stmt2.QueryContext(context.Background())
 		if err == nil {
 			err = rows.Close()
 		}
@@ -3233,7 +3233,7 @@ func (c *concurrentStmtQueryTest) finish(t testing.TB) {
 }
 
 func (c *concurrentStmtQueryTest) test(t testing.TB) error {
-	rows, err := c.stmt.Query()
+	rows, err := c.stmt.QueryContext(context.Background())
 	if err != nil {
 		t.Errorf("error on query:  %v", err)
 		return err
@@ -3378,7 +3378,7 @@ func (c *concurrentTxStmtQueryTest) finish(t testing.TB) {
 }
 
 func (c *concurrentTxStmtQueryTest) test(t testing.TB) error {
-	rows, err := c.stmt.Query()
+	rows, err := c.stmt.QueryContext(context.Background())
 	if err != nil {
 		t.Errorf("error on query:  %v", err)
 		return err
@@ -3522,7 +3522,7 @@ func TestIssue6081(t *testing.T) {
 	})
 	defer setRowsCloseHook(nil)
 	for i := 0; i < 10; i++ {
-		rows, err := stmt.Query()
+		rows, err := stmt.QueryContext(context.Background())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4410,7 +4410,7 @@ func BenchmarkManyConcurrentQueries(b *testing.B) {
 	b.SetParallelism(parallelism)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			rows, err := stmt.Query("sleep", 1)
+			rows, err := stmt.QueryContext(context.Background(), "sleep", 1)
 			if err != nil {
 				b.Error(err)
 				return

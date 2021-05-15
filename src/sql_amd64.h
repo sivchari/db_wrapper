@@ -180,6 +180,13 @@ extern GoUintptr TxQueryExec(GoUintptr u, char* cQuery);
 // StmtExec executes prepare's query
 extern GoUintptr StmtExec(GoUintptr u, char* cArgs);
 
+// Query executes a prepared query statement with the given arguments
+// and returns the query results as a *Rows.
+//
+// Query uses context.Background internally; to specify the context, use
+// QueryContext.
+extern GoUintptr StmtQuery(GoUintptr u, char* cArgs);
+
 #ifdef __cplusplus
 }
 #endif

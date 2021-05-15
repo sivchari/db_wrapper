@@ -3075,8 +3075,20 @@ func (s *Stmt) QueryContext(ctx context.Context, args ...interface{}) (*Rows, er
 //
 // Query uses context.Background internally; to specify the context, use
 // QueryContext.
-func (s *Stmt) Query(args ...interface{}) (*Rows, error) {
-	return s.QueryContext(context.Background(), args...)
+//export StmtQuery
+func StmtQuery(u uintptr, cArgs *C.char) uintptr {
+	stmt := GetStmtInstance(u)
+	args := C.GoString(cArgs)
+	strSlice := strings.Split(args, ",")
+	vargs := make([]interface{}, len(strSlice))
+	for i, v := range strSlice {
+		vargs[i] = interface{}(v)
+	}
+	result, err := stmt.QueryContext(context.Background(), vargs...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return convertTocRows(result)
 }
 
 func rowsiFromStatement(ctx context.Context, ci driver.Conn, ds *driverStmt, args ...interface{}) (driver.Rows, error) {
