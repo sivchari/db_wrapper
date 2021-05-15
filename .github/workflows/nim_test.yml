@@ -4,11 +4,11 @@ on:
   push:
     paths-ignore:
       - '*.md'
-      - 'img'
+      - 'img/'
   pull_request:
     paths-ignore:
       - '*.md'
-      - 'img'
+      - 'img/'
 
 jobs:
   skip:
