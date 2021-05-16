@@ -55,8 +55,6 @@ proc asyncRow2():Future[QueryRows] {.async.} =
   echo "async2"
   await sleepAsync(3000)
   result = await db.asyncQuery("SELECT * FROM sample WHERE id = ?", @[$1])
-<<<<<<< Updated upstream
-=======
   echo "async2 prepare exec"
   let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
   asyncCheck stmt.asyncExec(@["Nim", $1])
@@ -64,7 +62,6 @@ proc asyncRow2():Future[QueryRows] {.async.} =
   db.transaction:
     let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
     asyncCheck stmt.asyncExec(@["Tx Nim", $1])
->>>>>>> Stashed changes
   echo "async2 end"
 
 proc asyncRow3():Future[QueryRows] {.async.} =
