@@ -1,4 +1,4 @@
-import macros, os, strutils, strformat
+import asyncdispatch, macros, os, strformat, strutils
 
 # apple silicon or Intel
 when defined(unix):
@@ -61,18 +61,20 @@ proc dbFormat(formatstr: string, args: varargs[string, `$`]): string =
     else:
       add(result, c)
 
-proc pqDBFormat(formatstr: string, args: varargs[string, `$`]): string =
-  result = formatstr
-  var count = 0
+# TODO:: correspond to $* place holder
+proc pqDBFormat(formatstr: string): string =
+  result = ""
+  var count = 1
   for c in items(formatStr):
-    if c == '$':
-      let placeNum = count + 1
-      result = result.replace("$" & placeNum.intToStr, dbQuote(args[count]))
+    if c == '?':
+      add(result, "$" & count.intToStr)
       inc(count)
+    else:
+      add(result, c)
 
 proc stmtFormat(args: varargs[string, `$`]): string =
   result = ""
-  let argsLen = args.len()
+  let argsLen = args.len
   var count = 1
   for c in items(args):
     if count == argsLen:
@@ -125,31 +127,59 @@ proc query*(uptr: DBConnection, query: string, args: varargs[string, `$`]):Query
   let d = uptr.getDriverName
   var q: string
   if d == "mysql": q = dbFormat(query, args)
-  elif d == "postgres": q = pqDBFormat(query, args)
+  elif d == "postgres": q = dbFormat(query, args)
   elif d == "sqlite3": q = dbFormat(query, args)
   uptr.queryExec(q)
+
+proc asyncQuery*(uptr: DBConnection, query: string, args: varargs[string, `$`]):Future[QueryRows] {.async.} =
+  result = uptr.query(query, args)
 
 proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryRows =
   let d = uptr.getDriverName
   var q: string
   if d == "mysql": q = dbFormat(query, args)
-  elif d == "postgres": q = pqDBFormat(query, args)
+  elif d == "postgres": q = dbFormat(query, args)
   elif d == "sqlite3": q = dbFormat(query, args)
   uptr.queryExec(q)
+
+proc asyncQuery*(uptr: Transaction, query: string, args: varargs[string, `$`]):Future[QueryRows] {.async.} =
+  result = uptr.query(query, args)
 
 proc query*(uptr: Stmt, args: varargs[string, `$`]):QueryRows =
   let q = stmtFormat(args)
   uptr.queryExec(q)
 
-proc prepare*(uptr: DBConnection, query: cstring):Stmt {.cdecl, dynlib: getPath(), importc: "StmtPrepare".}
+proc asyncQuery*(uptr: Stmt, args: varargs[string, `$`]):Future[QueryRows] {.async.} =
+  result = uptr.query(args)
 
-proc prepare*(uptr: Transaction, query: cstring):Stmt {.cdecl, dynlib: getPath(), importc: "TxPrepare".}
+proc prepareExec(uptr: DBConnection, query: cstring):Stmt {.cdecl, dynlib: getPath(), importc: "StmtPrepare".}
+
+proc prepare*(uptr: DBConnection, query: string):Stmt =
+  let d = uptr.getDriverName
+  if d == "mysql" or d == "sqlite3": result = uptr.prepareExec(query)
+  elif d == "postgres": result = uptr.prepareExec(pqDBFormat(query))
+
+proc asyncPrepare*(uptr: DBConnection, query: string):Future[Stmt] {.async.} =
+  result = uptr.prepare(query)
+
+proc prepareExec(uptr: Transaction, query: cstring):Stmt {.cdecl, dynlib: getPath(), importc: "TxPrepare".}
+
+proc prepare*(uptr: Transaction, query: string):Stmt =
+  let d = uptr.getDriverName
+  if d == "mysql" or d == "sqlite3": result = uptr.prepareExec(query)
+  elif d == "postgres": result = uptr.prepareExec(pqDBFormat(query))
+
+proc asyncPrepare*(uptr: Transaction, query: string):Future[Stmt] {.async.} =
+  result = uptr.prepare(query)
 
 proc stmtExec(uptr: Stmt, args: cstring):Result {.cdecl, dynlib: getPath(), importc: "StmtExec".}
 
 proc exec*(uptr: Stmt, args: varargs[string, `$`]):Result =
   let q = stmtFormat(args)
   uptr.stmtExec(q)
+
+proc asyncExec*(uptr: Stmt, args: varargs[string, `$`]):Future[Result] {.async.} =
+  result = uptr.exec(args)
 
 proc getColumns(uptr: QueryRows):Columns {.cdecl, dynlib: getPath(), importc: "GetColumns".}
 
@@ -161,6 +191,9 @@ proc columnNames*(uptr: QueryRows):seq[string] =
     columnSeq[i] = $columns[i]
   result = columnSeq
 
+proc asyncColumnNames*(uptr: QueryRows):Future[seq[string]] {.async.} =
+  result = uptr.columnNames
+
 proc getTypes(uptr: QueryRows):Types {.cdecl, dynlib: getPath(), importc: "GetTypes".}
 
 proc columnTypes*(uptr: QueryRows):seq[string] =
@@ -169,6 +202,9 @@ proc columnTypes*(uptr: QueryRows):seq[string] =
   newSeq(result, len)
   for i in 0..len-1:
     result[i] = $types[i]
+
+proc asyncColumnTypes*(uptr: QueryRows):Future[seq[string]] {.async.} =
+  result = uptr.columnTypes
 
 proc getRow(uptr: QueryRows, i: int):Rows {.cdecl, dynlib: getPath(), importc: "GetRow".}
 
@@ -179,6 +215,9 @@ proc `[]`*(uptr: QueryRows, i: int):seq[string] =
   for i in 0..len-1:
     result[i] = $row[i]
 
+proc asyncGetRow*(uptr: QueryRows, i: int):Future[seq[string]] {.async.} =
+  result = uptr.`[]`(i)
+
 proc all*(uptr: QueryRows):seq[seq[string]] =
   let c = uptr.getRowsCount
   var rows: seq[seq[string]]
@@ -186,6 +225,9 @@ proc all*(uptr: QueryRows):seq[seq[string]] =
     let row = uptr[i]
     rows.add(row)
   result = rows
+
+proc asyncAll*(uptr: QueryRows):Future[seq[seq[string]]] {.async.} =
+  result = uptr.all
 
 proc beginTransaction*(uptr: DBConnection):Transaction {.cdecl, dynlib: getPath(), importc: "Begin".}
 

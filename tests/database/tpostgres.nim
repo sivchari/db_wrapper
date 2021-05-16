@@ -35,43 +35,43 @@ block: # check PostgreSQL query
   let tests: seq[struct] = @[
     struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name, time) VALUES($1, $2, $3, $4)",
+      query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
       args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
-      query: "SELECT * FROM sample WHERE id = $1",
+      query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
       want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
     ),
     struct(
       name: "DELETE",
-      query: "DELETE FROM sample WHERE id = $1",
+      query: "DELETE FROM sample WHERE id = ?",
       args: @[$1],
       want: @[]
     ),
     struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+      query: "INSERT INTO sample(id, age) VALUES(?, ?)",
       args: @[$1, $10],
       want: @[]
     ),
     struct(
       name: "SELECT",
-      query: "SELECT * FROM sample WHERE id = $1",
+      query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
       want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
-      query: "UPDATE sample SET name = $1 WHERE id = $2",
+      query: "UPDATE sample SET name = ? WHERE id = ?",
       args: @["Change Nim", $1],
       want: @[]
     ),
     struct(
       name: "DELETE",
-      query: "DELETE FROM sample WHERE id = $1",
+      query: "DELETE FROM sample WHERE id = ?",
       args: @[$1],
       want: @[]
     ),
@@ -99,43 +99,43 @@ block: # check PostgreSQL prepare exec
   let tests: seq[struct] = @[
     struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age, name, time) VALUES($1, $2, $3, $4)",
+      query: "INSERT INTO sample(id, age, name, time) VALUES(?, ?, ?, ?)",
       args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
       want: @[]
     ),
     struct(
       name: "SELECT",
-      query: "SELECT * FROM sample WHERE id = $1",
+      query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
       want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
     ),
     struct(
       name: "DELETE",
-      query: "DELETE FROM sample WHERE id = $1",
+      query: "DELETE FROM sample WHERE id = ?",
       args: @[$1],
       want: @[]
     ),
     struct(
       name: "INSERT",
-      query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+      query: "INSERT INTO sample(id, age) VALUES(?, ?)",
       args: @[$1, $10],
       want: @[]
     ),
     struct(
       name: "SELECT",
-      query: "SELECT * FROM sample WHERE id = $1",
+      query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
       want: @["1", "10", "", ""]
     ),
     struct(
       name: "UPDATE",
-      query: "UPDATE sample SET name = $1 WHERE id = $2",
+      query: "UPDATE sample SET name = ? WHERE id = ?",
       args: @["Change Nim", $1],
       want: @[]
     ),
     struct(
       name: "DELETE",
-      query: "DELETE FROM sample WHERE id = $1",
+      query: "DELETE FROM sample WHERE id = ?",
       args: @[$1],
       want: @[]
     ),
@@ -165,7 +165,7 @@ block: # check PostgreSQL prepare exec
 block: # check Tx PostgreSQL query
   let t1: struct = struct(
     name: "INSERT",
-    query: "INSERT INTO sample(id, age, name) VALUES($1, $2, $3)",
+    query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
     args: @[$1, $10, "New Nim"],
     want: @[]
   )
@@ -175,7 +175,7 @@ block: # check Tx PostgreSQL query
 
   let t2: struct = struct(
     name: "SELECT",
-    query: "SELECT * FROM sample WHERE id = $1",
+    query: "SELECT * FROM sample WHERE id = ?",
     args: @[$1],
     want: @["1", "10", "New Nim", ""]
   )
@@ -188,7 +188,7 @@ block: # check Tx PostgreSQL query
   
   let t3: struct = struct(
     name: "DELETE",
-    query: "DELETE FROM sample WHERE id = $1",
+    query: "DELETE FROM sample WHERE id = ?",
     args: @[$1],
     want: @[]
   )
@@ -198,7 +198,7 @@ block: # check Tx PostgreSQL query
   
   let t4: struct = struct(
     name: "INSERT",
-    query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+    query: "INSERT INTO sample(id, age) VALUES(?, ?)",
     args: @[$1, $10],
     want: @[]
   )
@@ -208,7 +208,7 @@ block: # check Tx PostgreSQL query
 
   let t5: struct = struct(
     name: "SELECT",
-    query: "SELECT * FROM sample WHERE id = $1",
+    query: "SELECT * FROM sample WHERE id = ?",
     args: @[$1],
     want: @["1", "10", "", ""]
   )
@@ -221,7 +221,7 @@ block: # check Tx PostgreSQL query
 
   let t6: struct = struct(
     name: "UPDATE",
-    query: "UPDATE sample SET name = $1 WHERE id = $2",
+    query: "UPDATE sample SET name = ? WHERE id = ?",
     args: @["Change Nim", $1],
     want: @[]
   )
@@ -231,7 +231,7 @@ block: # check Tx PostgreSQL query
   
   let t7: struct = struct(
     name: "DELETE",
-    query: "DELETE FROM sample WHERE id = $1",
+    query: "DELETE FROM sample WHERE id = ?",
     args: @[$1],
     want: @[]
   )
@@ -242,7 +242,7 @@ block: # check Tx PostgreSQL query
 block: # check Tx PostgreSQL prepare exec
   let t1: struct = struct(
     name: "INSERT",
-    query: "INSERT INTO sample(id, age, name) VALUES($1, $2, $3)",
+    query: "INSERT INTO sample(id, age, name) VALUES(?, ?, ?)",
     args: @[$1, $10, "New Nim"],
     want: @[]
   )
@@ -252,7 +252,7 @@ block: # check Tx PostgreSQL prepare exec
 
   let t2: struct = struct(
     name: "SELECT",
-    query: "SELECT * FROM sample WHERE id = $1",
+    query: "SELECT * FROM sample WHERE id = ?",
     args: @[$1],
     want: @["1", "10", "New Nim", ""]
   )
@@ -265,7 +265,7 @@ block: # check Tx PostgreSQL prepare exec
   
   let t3: struct = struct(
     name: "DELETE",
-    query: "DELETE FROM sample WHERE id = $1",
+    query: "DELETE FROM sample WHERE id = ?",
     args: @[$1],
     want: @[]
   )
@@ -275,7 +275,7 @@ block: # check Tx PostgreSQL prepare exec
   
   let t4: struct = struct(
     name: "INSERT",
-    query: "INSERT INTO sample(id, age) VALUES($1, $2)",
+    query: "INSERT INTO sample(id, age) VALUES(?, ?)",
     args: @[$1, $10],
     want: @[]
   )
@@ -285,7 +285,7 @@ block: # check Tx PostgreSQL prepare exec
   
   let t5: struct = struct(
     name: "SELECT",
-    query: "SELECT * FROM sample WHERE id = $1",
+    query: "SELECT * FROM sample WHERE id = ?",
     args: @[$1],
     want: @["1", "10", "", ""]
   )
@@ -298,7 +298,7 @@ block: # check Tx PostgreSQL prepare exec
 
   let t6: struct = struct(
     name: "UPDATE",
-    query: "UPDATE sample SET name = $1 WHERE id = $2",
+    query: "UPDATE sample SET name = ? WHERE id = ?",
     args: @["Change Nim", $1],
     want: @[]
   )
@@ -308,7 +308,7 @@ block: # check Tx PostgreSQL prepare exec
   
   let t7: struct = struct(
     name: "DELETE",
-    query: "DELETE FROM sample WHERE id = $1",
+    query: "DELETE FROM sample WHERE id = ?",
     args: @[$1],
     want: @[]
   )

@@ -36,4 +36,10 @@ echo "delete"
 let stmt2 = db.prepare("DELETE FROM sample WHERE id = ?")
 discard stmt2.exec(1)
 
+echo "transaction"
+db.transaction:
+  let stmt3 = db.prepare("UPDATE sample SET name = ? WHERE id = ?")
+  discard stmt3.exec("Rollback Nim", 1)
+  raise newException(Exception, "rollback")
+
 discard db.close

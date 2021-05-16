@@ -1,4 +1,5 @@
 import ../src/database
+import asyncdispatch
 
 let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 10)
 echo db.ping
@@ -28,9 +29,48 @@ echo "delete"
 let stmt2 = db.prepare("DELETE FROM sample WHERE id = ?")
 discard stmt2.exec(1)
 
+echo "transaction"
 db.transaction:
   let stmt3 = db.prepare("UPDATE sample SET name = ? WHERE id = ?")
   discard stmt3.exec("Rollback Nim", 1)
   raise newException(Exception, "rollback")
 
+echo "next insert"
+discard db.query("INSERT INTO sample(id, age, name) VALUES(?, ?, ?)", 1, 10, "New Nim")
+
+proc asyncRow1():Future[QueryRows] {.async.} =
+  echo "async1"
+  await sleepAsync(1000)
+  result = await db.asyncQuery("SELECT * FROM sample WHERE id = ?", @[$1])
+  echo "async1 end"
+
+proc asyncRow2():Future[QueryRows] {.async.} =
+  echo "async2"
+  await sleepAsync(3000)
+  result = await db.asyncQuery("SELECT * FROM sample WHERE id = ?", @[$1])
+  echo "async2 end"
+
+proc asyncRow3():Future[QueryRows] {.async.} =
+  echo "async3"
+  await sleepAsync(2000)
+  result = await db.asyncQuery("SELECT * FROM sample WHERE id = ?", @[$1])
+  echo "async3 end"
+
+proc main() {.async.} =
+  try:
+    echo "async"
+    let a1 = asyncRow1()
+    let a2 = asyncRow2()
+    let a3 = asyncRow3()
+
+    let results = await all(@[a1, a2, a3])
+
+    for result in results:
+      echo await result.asyncGetRow(0)
+
+    echo "async end"
+  except:
+    echo getCurrentExceptionMsg()
+
+waitFor main()
 discard db.close
