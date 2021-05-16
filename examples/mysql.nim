@@ -42,18 +42,43 @@ proc asyncRow1():Future[QueryRows] {.async.} =
   echo "async1"
   await sleepAsync(1000)
   result = await db.asyncQuery("SELECT * FROM sample WHERE id = ?", @[$1])
+  echo "async1 prepare exec"
+  let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
+  asyncCheck stmt.asyncExec(@["Nim", $1])
+  echo "async1 transaction"
+  db.transaction:
+    let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
+    asyncCheck stmt.asyncExec(@["Tx Nim", $1])
   echo "async1 end"
 
 proc asyncRow2():Future[QueryRows] {.async.} =
   echo "async2"
   await sleepAsync(3000)
   result = await db.asyncQuery("SELECT * FROM sample WHERE id = ?", @[$1])
+<<<<<<< Updated upstream
+=======
+  echo "async2 prepare exec"
+  let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
+  asyncCheck stmt.asyncExec(@["Nim", $1])
+  echo "async2 transaction"
+  db.transaction:
+    let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
+    asyncCheck stmt.asyncExec(@["Tx Nim", $1])
+>>>>>>> Stashed changes
   echo "async2 end"
 
 proc asyncRow3():Future[QueryRows] {.async.} =
   echo "async3"
   await sleepAsync(2000)
   result = await db.asyncQuery("SELECT * FROM sample WHERE id = ?", @[$1])
+  echo "async3 prepare exec"
+  let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
+  asyncCheck stmt.asyncExec(@["Nim", $1])
+  echo "async3 transaction"
+  db.transaction:
+    let stmt = await db.asyncPrepare("UPDATE sample SET name = ? WHERE id = ?")
+    asyncCheck stmt.asyncExec(@["Tx Nim", $1])
+  await sleepAsync(2000)
   echo "async3 end"
 
 proc main() {.async.} =
@@ -62,12 +87,9 @@ proc main() {.async.} =
     let a1 = asyncRow1()
     let a2 = asyncRow2()
     let a3 = asyncRow3()
-
     let results = await all(@[a1, a2, a3])
-
     for result in results:
       echo await result.asyncGetRow(0)
-
     echo "async end"
   except:
     echo getCurrentExceptionMsg()

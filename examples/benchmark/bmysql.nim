@@ -1,5 +1,5 @@
 import asyncdispatch, times
-import ../../src/database/database
+import ../../src/database
 
 # time 2.205213, 2.140853, 2.212488, 2.33294, 2.242372
 let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 151)

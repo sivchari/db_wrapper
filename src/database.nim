@@ -20,7 +20,7 @@ type
   DBConnection* = distinct pointer
   QueryRows* = pointer
   Stmt* = distinct pointer
-  Result* = pointer
+  Result* = distinct pointer
   Rows* = cstringArray
   Columns* = cstringArray
   Types* = cstringArray
@@ -131,7 +131,7 @@ proc query*(uptr: DBConnection, query: string, args: varargs[string, `$`]):Query
   elif d == "sqlite3": q = dbFormat(query, args)
   uptr.queryExec(q)
 
-proc asyncQuery*(uptr: DBConnection, query: string, args: varargs[string, `$`]):Future[QueryRows] {.async.} =
+proc asyncQuery*(uptr: DBConnection, query: string, args: seq[string]):Future[QueryRows] {.async.} =
   result = uptr.query(query, args)
 
 proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryRows =
@@ -142,14 +142,14 @@ proc query*(uptr: Transaction, query: string, args: varargs[string, `$`]):QueryR
   elif d == "sqlite3": q = dbFormat(query, args)
   uptr.queryExec(q)
 
-proc asyncQuery*(uptr: Transaction, query: string, args: varargs[string, `$`]):Future[QueryRows] {.async.} =
+proc asyncQuery*(uptr: Transaction, query: string, args: seq[string]):Future[QueryRows] {.async.} =
   result = uptr.query(query, args)
 
 proc query*(uptr: Stmt, args: varargs[string, `$`]):QueryRows =
   let q = stmtFormat(args)
   uptr.queryExec(q)
 
-proc asyncQuery*(uptr: Stmt, args: varargs[string, `$`]):Future[QueryRows] {.async.} =
+proc asyncQuery*(uptr: Stmt, args: seq[string]):Future[QueryRows] {.async.} =
   result = uptr.query(args)
 
 proc prepareExec(uptr: DBConnection, query: cstring):Stmt {.cdecl, dynlib: getPath(), importc: "StmtPrepare".}
@@ -172,14 +172,23 @@ proc prepare*(uptr: Transaction, query: string):Stmt =
 proc asyncPrepare*(uptr: Transaction, query: string):Future[Stmt] {.async.} =
   result = uptr.prepare(query)
 
-proc stmtExec(uptr: Stmt, args: cstring):Result {.cdecl, dynlib: getPath(), importc: "StmtExec".}
+proc stmtExec(uptr: Stmt, args: cstring):QueryRows {.cdecl, dynlib: getPath(), importc: "StmtExec".}
 
-proc exec*(uptr: Stmt, args: varargs[string, `$`]):Result =
+proc stmtExec(uptr: Future[Stmt], args: cstring):Future[QueryRows] {.async, cdecl, dynlib: getPath(), importc: "StmtExec".}
+
+proc exec*(uptr: Stmt, args: varargs[string, `$`]):QueryRows =
   let q = stmtFormat(args)
   uptr.stmtExec(q)
 
-proc asyncExec*(uptr: Stmt, args: varargs[string, `$`]):Future[Result] {.async.} =
+proc exec(uptr: Future[Stmt], args: seq[string]):Future[QueryRows] {.async.} =
+  let q = stmtFormat(args)
+  result = await uptr.stmtExec(q)
+
+proc asyncExec*(uptr: Stmt, args: seq[string]):Future[QueryRows] {.async.} =
   result = uptr.exec(args)
+
+proc asyncExec*(uptr: Future[Stmt], args: seq[string]):Future[QueryRows] {.async.} =
+  result = await uptr.exec(args)
 
 proc getColumns(uptr: QueryRows):Columns {.cdecl, dynlib: getPath(), importc: "GetColumns".}
 
