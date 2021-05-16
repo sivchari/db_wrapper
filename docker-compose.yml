@@ -14,12 +14,14 @@ services:
       - postgres
 
   mysql:
-    image: mariadb
+    #image: mariadb
+    image: mysql:8.0
+    platform: linux/x86_64
     tty: true
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
       - ./db/mysql/init:/docker-entrypoint-initdb.d
-      - ./db/mysql/my.cnf:/etc/mysql/nginx.conf/my.cnf
+      - ./db/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     ports:
       - 3306:3306
     environment:
