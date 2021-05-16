@@ -7,6 +7,12 @@ database provides intuitive DB methods.
 Just by using this library, you can use MySQL, PostgreSQL, and SQLite.  
 By using connection pooling, parallel DB processing can be done at high speed.
 
+**When combined with spwan and parallel, it can process 3 times faster than the standard method.**
+
+## Performance using spwan or parallel
+![MySQL Parallel Bench](img/parallel_query.png)
+
+
 ## Installation
 ```shell
 nimble install https://github.com/sivchari/database
