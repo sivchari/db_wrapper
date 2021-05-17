@@ -1,7 +1,10 @@
 import asyncdispatch, macros, os, strformat, strutils
 
-# apple silicon or Intel
+# About async method args
+# Error: 'args' is of type <varargs[string]> which cannot be captured as it would violate memory safety.
+
 when defined(unix):
+  # apple silicon or intel
   when defined(macosx):
     when defined(amd64):
       const
@@ -223,9 +226,6 @@ proc `[]`*(uptr: QueryRows, i: int):seq[string] =
   newSeq(result, len)
   for i in 0..len-1:
     result[i] = $row[i]
-
-proc asyncGetRow*(uptr: QueryRows, i: int):Future[seq[string]] {.async.} =
-  result = uptr.`[]`(i)
 
 proc all*(uptr: QueryRows):seq[seq[string]] =
   let c = uptr.getRowsCount

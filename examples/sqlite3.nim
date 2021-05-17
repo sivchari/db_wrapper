@@ -94,7 +94,7 @@ proc main() {.async.} =
     let a3 = asyncRow3()
     let results = await all(@[a1, a2, a3])
     for result in results:
-      echo await result.asyncGetRow(0)
+      echo result[0]
     echo "async end"
   except:
     echo getCurrentExceptionMsg()
