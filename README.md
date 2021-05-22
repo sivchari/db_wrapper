@@ -18,13 +18,13 @@ By using connection pooling, parallel DB processing can be done at high speed.
 
 ## Installation
 ```shell
-nimble install https://github.com/sivchari/database
+nimble install https://github.com/sivchari/db
 ```
 
 ## Example
 ### MySQL
 ```nim
-import database
+import db as database
 
 let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 10)
 echo db.ping
@@ -64,7 +64,7 @@ discard db.close
 
 ### PostgreSQL
 ```nim
-import database
+import db as database
 
 let db = open(PostgreSQL, "database", "user", "Password!", "127.0.0.1", "5432", 1)
 echo db.ping
@@ -104,7 +104,7 @@ discard db.close
 
 ### SQLite
 ```nim
-import database
+import db as database
 
 let db = open(SQLite3, "sample.sqlite3")
 echo db.ping

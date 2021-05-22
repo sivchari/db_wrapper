@@ -1,25 +1,26 @@
 import unittest
-import ../../src/database
+import ../../src/db
 
 # write tests for failures.
-let mysql = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 1)
-echo "mysql connected!"
+
+let sqlite = open(SQLite3, "tests/db/sample.sqlite3")
+echo "sqlite connected!"
 
 block: # check ping
-  check mysql.ping == true
+  check sqlite.ping == true
 echo "Ping!"
 
 # set up before test
 let drop = "DROP TABLE IF EXISTS sample"
-discard mysql.query(drop)
+discard sqlite.query(drop)
 
-let create = """CREATE TABLE IF NOT EXISTS `database`.`sample` (
+let create = """CREATE TABLE IF NOT EXISTS `sample` (
    `id`  INT
   ,`age` INT
-  ,`name` VARCHAR(30)
+  ,`name` VARCHAR
   ,`time` TIMESTAMP NULL DEFAULT NULL
 )"""
-discard mysql.query(create)
+discard sqlite.query(create)
 
 # table driven test
 # IMO, I think that this test format makes the intent of the test clearer
@@ -77,7 +78,9 @@ block: # check MySQL query
   ]
 
   for tt in items(tests): # run test
-    let result = mysql.query(tt.query, tt.args)
+    var result: QueryRows
+    if tt.name == "SELECT": result = sqlite.prepare(tt.query).query(tt.args)
+    else: result = sqlite.prepare(tt.query).exec(tt.args)
     case tt.name
     of "INSERT":
       if isNil result: quit("FAILURE")
@@ -104,7 +107,7 @@ block: # check MySQL prepare exec
       name: "SELECT",
       query: "SELECT * FROM sample WHERE id = ?",
       args: @[$1],
-      want: @["1", $10, "New Nim", "2016-01-01 00:00:00"]
+      want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
     ),
     struct(
       name: "DELETE",
@@ -140,8 +143,8 @@ block: # check MySQL prepare exec
 
   for tt in items(tests): # run test
     var result: QueryRows
-    if tt.name == "SELECT": result = mysql.prepare(tt.query).query(tt.args)
-    else: result = mysql.prepare(tt.query).exec(tt.args)
+    if tt.name == "SELECT": result = sqlite.prepare(tt.query).query(tt.args)
+    else: result = sqlite.prepare(tt.query).exec(tt.args)
     case tt.name
     of "INSERT":
       if isNil result: quit("FAILURE")
@@ -166,8 +169,8 @@ block: # check Tx MySQL query
     args: @[$1, $10, "New Nim", "2016-01-01 00:00:00"],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.query(t1.query, t1.args)
+  sqlite.transaction:
+    let result = sqlite.query(t1.query, t1.args)
     if isNil result: quit("FAILURE")
 
   let t2: struct = struct(
@@ -176,8 +179,8 @@ block: # check Tx MySQL query
     args: @[$1],
     want: @["1", "10", "New Nim", "2016-01-01 00:00:00"]
   )
-  mysql.transaction:
-    let result = mysql.query(t2.query, t2.args)
+  sqlite.transaction:
+    let result = sqlite.query(t2.query, t2.args)
     check result[0] == t2.want
     check result.all == @[result[0]]
     check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
@@ -189,8 +192,8 @@ block: # check Tx MySQL query
     args: @[$1],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.query(t3.query, t3.args)
+  sqlite.transaction:
+    let result = sqlite.query(t3.query, t3.args)
     if isNil result: quit("FAILURE")
 
   let t4: struct = struct(
@@ -199,8 +202,8 @@ block: # check Tx MySQL query
     args: @[$1, $10],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.query(t4.query, t4.args)
+  sqlite.transaction:
+    let result = sqlite.query(t4.query, t4.args)
     if isNil result: quit("FAILURE")
 
   let t5: struct = struct(
@@ -209,8 +212,8 @@ block: # check Tx MySQL query
     args: @[$1],
     want: @["1", "10", "", ""]
   )
-  mysql.transaction:
-    let result = mysql.query(t5.query, t5.args)
+  sqlite.transaction:
+    let result = sqlite.query(t5.query, t5.args)
     check result[0] == t5.want
     check result.all == @[result[0]]
     check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
@@ -222,8 +225,8 @@ block: # check Tx MySQL query
     args: @["Change Nim", $1],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.query(t6.query, t6.args)
+  sqlite.transaction:
+    let result = sqlite.query(t6.query, t6.args)
     if isNil result: quit("FAILURE")
 
   let t7: struct = struct(
@@ -232,8 +235,8 @@ block: # check Tx MySQL query
     args: @[$1],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.query(t7.query, t7.args)
+  sqlite.transaction:
+    let result = sqlite.query(t7.query, t7.args)
     if isNil result: quit("FAILURE")
 
 block: # check Tx MySQL prepare exec
@@ -243,8 +246,8 @@ block: # check Tx MySQL prepare exec
     args: @[$1, $10, "New Nim"],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.prepare(t1.query).exec(t1.args)
+  sqlite.transaction:
+    let result = sqlite.prepare(t1.query).exec(t1.args)
     if isNil result: quit("FAILURE")
 
   let t2: struct = struct(
@@ -253,8 +256,8 @@ block: # check Tx MySQL prepare exec
     args: @[$1],
     want: @["1", "10", "New Nim", ""]
   )
-  mysql.transaction:
-    let result = mysql.prepare(t2.query).query(t2.args)
+  sqlite.transaction:
+    let result = sqlite.prepare(t2.query).query(t2.args)
     check result[0] == t2.want
     check result.all == @[result[0]]
     check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
@@ -266,8 +269,8 @@ block: # check Tx MySQL prepare exec
     args: @[$1],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.prepare(t3.query).exec(t3.args)
+  sqlite.transaction:
+    let result = sqlite.prepare(t3.query).exec(t3.args)
     if isNil result: quit("FAILURE")
 
   let t4: struct = struct(
@@ -276,8 +279,8 @@ block: # check Tx MySQL prepare exec
     args: @[$1, $10],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.prepare(t4.query).exec(t4.args)
+  sqlite.transaction:
+    let result = sqlite.prepare(t4.query).exec(t4.args)
     if isNil result: quit("FAILURE")
 
   let t5: struct = struct(
@@ -286,8 +289,8 @@ block: # check Tx MySQL prepare exec
     args: @[$1],
     want: @["1", "10", "", ""]
   )
-  mysql.transaction:
-    let result = mysql.prepare(t5.query).query(t5.args)
+  sqlite.transaction:
+    let result = sqlite.prepare(t5.query).query(t5.args)
     check result[0] == t5.want
     check result.all == @[result[0]]
     check result.columnTypes == ["INT", "INT", "VARCHAR", "TIMESTAMP"]
@@ -299,8 +302,8 @@ block: # check Tx MySQL prepare exec
     args: @["Change Nim", $1],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.prepare(t6.query).exec(t6.args)
+  sqlite.transaction:
+    let result = sqlite.prepare(t6.query).exec(t6.args)
     if isNil result: quit("FAILURE")
 
   let t7: struct = struct(
@@ -309,9 +312,9 @@ block: # check Tx MySQL prepare exec
     args: @[$1],
     want: @[]
   )
-  mysql.transaction:
-    let result = mysql.prepare(t7.query).exec(t7.args)
+  sqlite.transaction:
+    let result = sqlite.prepare(t7.query).exec(t7.args)
     if isNil result: quit("FAILURE")
 
 block: # check close
-  check mysql.close == true
+  check sqlite.close == true

@@ -1,5 +1,5 @@
 import unittest
-import ../../src/database
+import ../../src/db
 
 # write tests for failures.
 

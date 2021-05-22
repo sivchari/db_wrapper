@@ -1,4 +1,4 @@
-import ../src/database
+import ../src/db as database
 import asyncdispatch
 
 let db = open(SQLite3, "sample.sqlite3")
