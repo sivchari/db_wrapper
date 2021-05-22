@@ -1,9 +1,9 @@
 import unittest
-import ../../src/database
+import ../../src/db as database
 
 # write tests for failures.
 
-let sqlite = open(SQLite3, "tests/database/sample.sqlite3")
+let sqlite = open(SQLite3, "tests/db/sample.sqlite3")
 echo "sqlite connected!"
 
 block: # check ping

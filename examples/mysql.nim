@@ -1,4 +1,4 @@
-import ../src/database
+import ../src/db as database
 import asyncdispatch
 
 let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 10)
