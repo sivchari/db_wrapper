@@ -1,5 +1,5 @@
 import unittest
-import ../../src/db as database
+import ../../src/db
 
 # write tests for failures.
 let mysql = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 1)
