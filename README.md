@@ -1,7 +1,7 @@
-# database
+# wrap_db
 
 [![nim_test](https://github.com/sivchari/database/actions/workflows/nim_test.yml/badge.svg)](https://github.com/sivchari/database/actions/workflows/nim_test.yml)
-[![sivchari>](https://circleci.com/gh/sivchari/database.svg?style=svg)](https://github.com/sivchari/database)
+[![sivchari>](https://circleci.com/gh/sivchari/wrap_db.svg?style=svg)](https://github.com/sivchari/wrap_db)
 
 database provides intuitive DB methods.  
 Just by using this library, you can use MySQL, PostgreSQL, and SQLite.  
