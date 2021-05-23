@@ -10,7 +10,7 @@
 !tests/
 !.gitattributes
 !README.md
-!db.nimble
+!db_wrapper.nimble
 !docker-compose.yml
 !go.mod
 !go.sum

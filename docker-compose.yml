@@ -14,7 +14,6 @@ services:
       - postgres
 
   mysql:
-    #image: mariadb
     image: mysql:8.0
     platform: linux/x86_64
     tty: true
@@ -22,8 +21,6 @@ services:
     volumes:
       - ./db/mysql/init:/docker-entrypoint-initdb.d
       - ./db/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-    ports:
-      - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: database
@@ -41,8 +38,6 @@ services:
       TZ: Asia/Tokyo
     volumes:
       - ./db/pq:/docker-entrypoint-initdb.d
-    ports:
-      - 5432:5432
 
   linux-compile:
     image: dockercore/golang-cross

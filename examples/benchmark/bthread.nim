@@ -1,5 +1,5 @@
 import times, threadpool
-import ../../src/database
+import ../../src/db_wrapper
 
 let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 100)
 

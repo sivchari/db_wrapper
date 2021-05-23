@@ -1,5 +1,5 @@
 import asyncdispatch, times
-import ../../src/database
+import ../../src/db_wrapper
 
 # time 2.45715, 1.858111, 2.194112, 1.90195, 1.982508
 let db = open(PostgreSQL, "database", "user", "Password!", "127.0.0.1", "5432", 10)
