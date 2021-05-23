@@ -1,4 +1,4 @@
-import ../src/db as database
+import ../src/db_wrapper
 import asyncdispatch
 
 let db = open(PostgreSQL, "database", "user", "Password!", "127.0.0.1", "5432", 1)

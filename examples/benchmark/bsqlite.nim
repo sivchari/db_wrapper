@@ -1,5 +1,5 @@
 import asyncdispatch, times
-import ../../src/database
+import ../../src/db_wrapper
 
 # time 0.301291, 0.284612, 0.28805, 0.285741, 0.26572
 let db = open(SQLite3, "sample.sqlite3")

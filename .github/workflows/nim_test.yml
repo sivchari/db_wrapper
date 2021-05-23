@@ -85,10 +85,10 @@ jobs:
         run: nimble check
 
       - name: run testament mysql
-        run: testament r tests/db/tmysql.nim
+        run: testament r tests/db_wrapper/tmysql.nim
 
       - name: run testament postgres
-        run: testament r tests/db/tpostgres.nim
+        run: testament r tests/db_wrapper/tpostgres.nim
 
       - name: run testament sqlite
-        run: testament r tests/db/tsqlite3.nim
+        run: testament r tests/db_wrapper/tsqlite3.nim

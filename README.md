@@ -1,9 +1,9 @@
-# wrap_db
+# db_wrapper
 
-[![nim_test](https://github.com/sivchari/db/actions/workflows/nim_test.yml/badge.svg)](https://github.com/sivchari/database/actions/workflows/nim_test.yml)
-[![sivchari>](https://circleci.com/gh/sivchari/db.svg?style=svg)](https://github.com/sivchari/db)
+[![nim_test](https://github.com/sivchari/db_wrapper/actions/workflows/nim_test.yml/badge.svg)](https://github.com/sivchari/database/actions/workflows/nim_test.yml)
+[![sivchari>](https://circleci.com/gh/sivchari/db_wrapper.svg?style=svg)](https://github.com/sivchari/db)
 
-database provides intuitive DB methods.  
+db_wrapper provides intuitive DB methods.  
 Just by using this library, you can use MySQL, PostgreSQL, and SQLite.  
 By using connection pooling, parallel DB processing can be done at high speed.
 
@@ -18,13 +18,13 @@ By using connection pooling, parallel DB processing can be done at high speed.
 
 ## Installation
 ```shell
-nimble install https://github.com/sivchari/db
+nimble install https://github.com/sivchari/db_wrapper
 ```
 
 ## Example
 ### MySQL
 ```nim
-import db as database
+import db_wrapper
 
 let db = open(MySQL, "database", "user", "Password!", "127.0.0.1", "3306", 10)
 echo db.ping
@@ -64,7 +64,7 @@ discard db.close
 
 ### PostgreSQL
 ```nim
-import db as database
+import db_wrapper
 
 let db = open(PostgreSQL, "database", "user", "Password!", "127.0.0.1", "5432", 1)
 echo db.ping
@@ -104,7 +104,7 @@ discard db.close
 
 ### SQLite
 ```nim
-import db as database
+import db_wrapper
 
 let db = open(SQLite3, "sample.sqlite3")
 echo db.ping
