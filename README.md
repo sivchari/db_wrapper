@@ -13,12 +13,13 @@ By using connection pooling, parallel DB processing can be done at high speed.
 ### db_mysql (Asynchronous because there is no connection pool)
 > 31.146314212 sec
 
-### database (Parallel)
+### db_wrapper (Parallel)
 > 12.02923 sec
 
 ## Installation
 ```shell
 nimble install https://github.com/sivchari/db_wrapper
+nimble install db_wrapper
 ```
 
 ## Example
@@ -177,8 +178,8 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64
 ## Benchmark
 
 There is an official database library for Nim, but it does not implement connection pooling.
-However, this library (database) allows connection pooling to be set at connection time.
-This library (database) implicitly sets the same value as the connection pool as idle connection when connecting.
+However, this library (db_wrapper) allows connection pooling to be set at connection time.
+This library (db_wrapper) implicitly sets the same value as the connection pool as idle connection when connecting.
 
 `There is a 9 second difference in performance between db_mysql and db_mysql for 150,000 queries issued.`
 
@@ -190,7 +191,7 @@ Here is a benchmark of the official db_mysql and 15000 queries and 150000 run wi
 ### db_mysql
 > 3.263424069 sec
 
-### database
+### db_wrapper
 > 2.4392 sec
 
 The reason why only the standard library calls sleep in the 150000 loop is because the standard library does not support concurrency and will execute another query before the query is completed.
@@ -207,7 +208,7 @@ commands out of sync; you can't run this command now
 ### db_mysql
 > 30.681650918 sec
 
-### database
+### db_wrapper
 > 23.312019 sec
 
 ## If you put async in both cases
@@ -216,5 +217,5 @@ commands out of sync; you can't run this command now
 ### db_mysql
 > 38.237305311 sec
 
-### database
+### db_wrapper
 > 29.214669 sec
