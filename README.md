@@ -1,6 +1,6 @@
 # db_wrapper
 
-[![nim_test](https://github.com/sivchari/db_wrapper/actions/workflows/nim_test.yml/badge.svg)](https://github.com/sivchari/database/actions/workflows/nim_test.yml)
+[![nim_test](https://github.com/sivchari/db_wrapper/actions/workflows/nim_test.yml/badge.svg)](https://github.com/sivchari/db_wrapper/actions/workflows/nim_test.yml)
 [![sivchari>](https://circleci.com/gh/sivchari/db_wrapper.svg?style=svg)](https://github.com/sivchari/db)
 
 db_wrapper provides intuitive DB methods.  
