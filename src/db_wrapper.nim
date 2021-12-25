@@ -88,7 +88,7 @@ proc stmtFormat(args: varargs[string, `$`]): string =
       inc(count)
 
 proc getPath():string =
-  result = if fileExists getAppDir()/".."/lib: getAppDir()/".."/lib else: currentSourcePath()/".."/lib
+  result = if fileExists getAppDir()/lib: getAppDir()/lib else: currentSourcePath()/".."/lib
 
 proc getRowsCount(uptr:QueryRows):int {.cdecl, dynlib: getPath(), importc: "GetRowsCount".}
 
