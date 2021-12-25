@@ -55,6 +55,7 @@ proc dbQuote(s: string): string =
   add(result, '\'')
 
 proc dbFormat(formatstr: string, args: varargs[string, `$`]): string =
+  if args.len == 0: return formatstr
   result = ""
   var count = 0
   for c in items(formatstr):
@@ -87,7 +88,7 @@ proc stmtFormat(args: varargs[string, `$`]): string =
       inc(count)
 
 proc getPath():string =
-  result = currentSourcePath() / ".." / lib
+  result = if fileExists getAppDir()/".."/lib: getAppDir()/".."/lib else: currentSourcePath()/".."/lib
 
 proc getRowsCount(uptr:QueryRows):int {.cdecl, dynlib: getPath(), importc: "GetRowsCount".}
 
